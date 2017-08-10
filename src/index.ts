@@ -78,13 +78,9 @@ async function executeCommandLine() {
     const errors: { file: string; name: string }[] = [];
     function collectErrors(file: string, identifier: ts.Identifier | undefined) {
         if (identifier) {
-            const references = languageService.findReferences(file, identifier.pos + 1);
-            if (references) {
-                for (const reference of references) {
-                    if (reference.references.every(r => r.fileName === file)) {
-                        errors.push({ file, name: identifier.text });
-                    }
-                }
+            const references = languageService.getReferencesAtPosition(file, identifier.pos + 1);
+            if (references && references.every(r => r.fileName === file)) {
+                errors.push({ file, name: identifier.text });
             }
         }
     }

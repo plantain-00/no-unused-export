@@ -22,3 +22,5 @@ export const g = 4;
 
 // tslint:disable-next-line:no-console
 console.log(g);
+
+export const h = 5;
