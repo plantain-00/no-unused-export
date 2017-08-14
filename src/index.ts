@@ -75,12 +75,13 @@ async function executeCommandLine() {
         },
     });
     const program = ts.createProgram(uniqFiles, { target: ts.ScriptTarget.ESNext });
-    const errors: { file: string; name: string }[] = [];
-    function collectErrors(file: string, identifier: ts.Identifier | undefined) {
+    const errors: { file: string; name: string; line: number; character: number; type: string }[] = [];
+    function collectErrors(file: string, identifier: ts.Identifier | undefined, sourceFile: ts.SourceFile, type: string) {
         if (identifier) {
             const references = languageService.getReferencesAtPosition(file, identifier.pos + 1);
             if (references && references.every(r => r.fileName === file)) {
-                errors.push({ file, name: identifier.text });
+                const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.pos);
+                errors.push({ file, name: identifier.text, line, character, type });
             }
         }
     }
@@ -91,15 +92,18 @@ async function executeCommandLine() {
                 const jsDocs = getJsDocs(node);
                 const isPublic = jsDocs.find(jsDoc => jsDoc.name === "public");
                 if (!isPublic) {
-                    if (node.kind === ts.SyntaxKind.TypeAliasDeclaration
-                        || node.kind === ts.SyntaxKind.FunctionDeclaration
-                        || node.kind === ts.SyntaxKind.ClassDeclaration
-                        || node.kind === ts.SyntaxKind.InterfaceDeclaration) {
-                        collectErrors(file, (node as ts.TypeAliasDeclaration | ts.FunctionDeclaration | ts.ClassDeclaration | ts.InterfaceDeclaration).name);
+                    if (node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
+                        collectErrors(file, (node as ts.TypeAliasDeclaration).name, sourceFile, "type");
+                    } else if (node.kind === ts.SyntaxKind.FunctionDeclaration) {
+                        collectErrors(file, (node as ts.FunctionDeclaration).name, sourceFile, "function");
+                    } else if (node.kind === ts.SyntaxKind.ClassDeclaration) {
+                        collectErrors(file, (node as ts.ClassDeclaration).name, sourceFile, "class");
+                    } else if (node.kind === ts.SyntaxKind.InterfaceDeclaration) {
+                        collectErrors(file, (node as ts.InterfaceDeclaration).name, sourceFile, "interface");
                     } else if (node.kind === ts.SyntaxKind.VariableStatement) {
                         const declarationList = (node as ts.VariableStatement).declarationList;
                         for (const declaration of declarationList.declarations) {
-                            collectErrors(file, declaration.name as ts.Identifier);
+                            collectErrors(file, declaration.name as ts.Identifier, sourceFile, "variable");
                         }
                     }
                 }
@@ -107,10 +111,11 @@ async function executeCommandLine() {
         });
     }
     if (errors.length > 0) {
+        printInConsole(`unused exported things found, please remove "export" or add "@public":`);
         for (const error of errors) {
-            printInConsole(`unused exported: ${error.name} at: ${error.file} , please remove "export" or add "@public"`);
+            printInConsole(`${error.file}:${error.line + 1}:${error.character + 2} unused exported ${error.type}: ${error.name}`);
         }
-        throw new Error("unused exported things found above.");
+        throw new Error("fail");
     }
 }
 
