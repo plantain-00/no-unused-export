@@ -142,24 +142,9 @@ type JsDoc = {
     comment: string | undefined;
 };
 
-try {
-    executeCommandLine().then(() => {
-        printInConsole("success.");
-    }, error => {
-        if (error.stdout) {
-            printInConsole(error.stdout);
-            process.exit(error.status);
-        } else {
-            printInConsole(error);
-            process.exit(1);
-        }
-    });
-} catch (error) {
-    if (error.stdout) {
-        printInConsole(error.stdout);
-        process.exit(error.status);
-    } else {
-        printInConsole(error);
-        process.exit(1);
-    }
-}
+executeCommandLine().then(() => {
+    printInConsole("check no unused export success.");
+}, error => {
+    printInConsole(error);
+    process.exit(1);
+});
