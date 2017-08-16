@@ -1,7 +1,7 @@
 import * as foo from "./foo";
 
-console.log(foo.b);
+console.log(foo.bb);
 
-import { h } from "./foo";
+import { hh } from "./foo";
 
-console.log(h);
+console.log(hh);
