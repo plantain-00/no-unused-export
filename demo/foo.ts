@@ -31,6 +31,9 @@ declare class EventEmitter<T>{ }
 @Component({
     selector: "df",
     template: angularTemplateHtml,
+    host: {
+        "[id]": "d5",
+    },
 })
 class Df {
     d1: number;
@@ -39,6 +42,10 @@ class Df {
     d3: number;
     @Output()
     d4 = new EventEmitter<any>();
+    d5: string;
+    @Input()
+    get d6() { return 1; }
+    set d6(value: number) { /* do nothing*/ }
 }
 
 @Component({

@@ -60,7 +60,7 @@ typings/
 
 # Source
 .vscode
-dist
+#dist
 **/*.js
 **/*.css
 !*.config.js
@@ -71,3 +71,4 @@ service-worker.js
 #**/*-*.png
 #index.html
 *.data
+!dist/*.js

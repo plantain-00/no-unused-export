@@ -7,11 +7,13 @@ module.exports = {
   ],
   lint: {
     ts: `tslint "src/**/*.ts"`,
-    js: `standard "**/*.config.js"`
+    js: `standard "**/*.config.js"`,
+    export: `node dist/index.js src/*.ts`
   },
   test: [
     'tsc -p spec',
     'jasmine',
+    'node dist/index.js demo/*.ts --suppressError > demo/result.txt',
     () => new Promise((resolve, reject) => {
       childProcess.exec('git status -s', (error, stdout, stderr) => {
         if (error) {
@@ -30,6 +32,5 @@ module.exports = {
     ts: `tslint --fix "src/**/*.ts"`,
     js: `standard --fix "**/*.config.js"`
   },
-  release: `clean-release`,
-  demoTest: `node dist/index.js demo/*.ts`
+  release: `clean-release`
 }
