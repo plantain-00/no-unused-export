@@ -358,7 +358,6 @@ executeCommandLine().then(() => {
 }, error => {
     printInConsole(error);
     if (!suppressError) {
-        console.log(2);
         process.exit(1);
     }
 });
