@@ -1,6 +1,6 @@
 {
   "name": "no-unused-export",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A CLI tool to check whether exported things in a module is used by other modules for Typescript.",
   "main": "index.js",
   "scripts": {
@@ -40,6 +40,8 @@
     "lodash.uniq": "4.5.0",
     "minimatch": "3.0.4",
     "minimist": "1.2.0",
+    "postcss-less": "1.1.0",
+    "postcss-scss": "1.0.2",
     "typescript": "2.4.2"
   },
   "bin": {

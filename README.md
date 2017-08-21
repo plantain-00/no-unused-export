@@ -12,6 +12,12 @@ A CLI tool to check whether exported things in a module is used by other modules
 
 `npm i no-unused-export -g`
 
+#### features
+
++ check whether exported variable, function, type, class, interface in a module is used by other modules
++ check whether public members of class are used outside of the class
++ check whether less or scss variables are used
+
 #### usage
 
 `no-unused-export "src/*.ts"`

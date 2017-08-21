@@ -8,4 +8,6 @@ unreferenced members found, please add "private" or "public":
 demo/foo.ts:18:5 unreferenced class Dd member: d3
 demo/foo.ts:39:5 unreferenced class Df member: d1
 demo/foo.ts:56:5 unreferenced class Dg member: d1
+unreferenced less variables found, please remove it or add "@public":
+demo/variable.less:4:1 unreferenced less variable: variable3
 check no unused export fail.
