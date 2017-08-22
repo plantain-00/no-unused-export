@@ -17,14 +17,47 @@ declare module "postcss-less" {
         nodes: Node[];
     }
     export interface Declaration {
-        type: "decl",
+        type: "decl";
         prop: string;
         value: string;
         source: Source;
     }
     export interface Rule {
         type: "rule";
+        nodes?: Node[];
+        selector: string;
+        source: Source;
+    }
+    export interface Comment {
+        type: "comment";
+        inline: boolean;
+        block: boolean;
+        text: string;
+        source: Source;
+    }
+    export interface Source {
+        start: {
+            line: number;
+            column: number;
+        };
+    }
+    export type Node = Declaration | Rule | Comment;
+}
+
+declare module "postcss-scss" {
+    export function parse(less: string): Root;
+    export interface Root {
         nodes: Node[];
+    }
+    export interface Declaration {
+        type: "decl";
+        prop: string;
+        value: string;
+        source: Source;
+    }
+    export interface Rule {
+        type: "rule";
+        nodes?: Node[];
         selector: string;
         source: Source;
     }

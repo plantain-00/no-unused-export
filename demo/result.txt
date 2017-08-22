@@ -10,4 +10,6 @@ demo/foo.ts:39:5 unreferenced class Df member: d1
 demo/foo.ts:56:5 unreferenced class Dg member: d1
 unreferenced less variables found, please remove it or add "@public":
 demo/variable.less:4:1 unreferenced less variable: variable3
+unreferenced scss variables found, please remove it or add "@public":
+demo/variable.scss:4:1 unreferenced scss variable: variable3
 check no unused export fail.

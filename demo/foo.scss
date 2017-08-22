@@ -1,7 +1,7 @@
-@import "./variable.less";
+@import "./variable.scss";
 
 .tree-icon {
-    background-image: url("@{variable2}");
+    background-image: url("$variable2");
 
     a {
         background-image: url("./a.png");

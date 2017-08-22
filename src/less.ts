@@ -1,4 +1,4 @@
-import { parse, Node, Root } from "postcss-less";
+import { parse, Node } from "postcss-less";
 import * as fs from "fs";
 
 export function check(uniqFiles: string[]) {
@@ -7,7 +7,7 @@ export function check(uniqFiles: string[]) {
         if (node.type === "decl") {
             if (!markedPublic && node.prop.startsWith("@") && !variables.has(node.prop)) {
                 const variableName = node.prop.substring(1);
-                variables.set(`@{${variableName}}`, {
+                variables.set(variableName, {
                     file,
                     name: variableName,
                     line: node.source.start.line,
@@ -16,8 +16,10 @@ export function check(uniqFiles: string[]) {
                 });
             }
         } else if (node.type === "rule") {
-            for (const childNode of node.nodes) {
-                markedPublic = collectVariablesFromNode(file, childNode, markedPublic);
+            if (node.nodes) {
+                for (const childNode of node.nodes) {
+                    markedPublic = collectVariablesFromNode(file, childNode, markedPublic);
+                }
             }
         } else if (node.type === "comment") {
             if (node.text === "@public") {
@@ -27,10 +29,10 @@ export function check(uniqFiles: string[]) {
         return false;
     }
 
-    const roots: { fileName: string; root: Root }[] = [];
+    const roots: { fileName: string; nodes: Node[] }[] = [];
     for (const fileName of uniqFiles) {
         const root = parse(fs.readFileSync(fileName, { encoding: "utf8" }));
-        roots.push({ fileName, root });
+        roots.push({ fileName, nodes: root.nodes });
         let markedPublic = false;
         for (const node of root.nodes) {
             markedPublic = collectVariablesFromNode(fileName, node, markedPublic);
@@ -43,7 +45,8 @@ export function check(uniqFiles: string[]) {
                 const referencedVariableNames = new Set<string>();
                 for (const [variableName] of variables) {
                     if (!referencedVariableNames.has(variableName)
-                        && node.value.includes(variableName)) {
+                        && (node.value.includes(`@${variableName}`)
+                            || node.value.includes(`@{${variableName}}`))) {
                         referencedVariableNames.add(variableName);
                     }
                 }
@@ -51,15 +54,17 @@ export function check(uniqFiles: string[]) {
                     variables.delete(variableName);
                 }
             } else if (node.type === "rule") {
-                for (const childNode of node.nodes) {
-                    checkVariablesIsUsedForNode(childNode);
+                if (node.nodes) {
+                    for (const childNode of node.nodes) {
+                        checkVariablesIsUsedForNode(childNode);
+                    }
                 }
             }
         }
     }
 
     for (const root of roots) {
-        for (const node of root.root.nodes) {
+        for (const node of root.nodes) {
             checkVariablesIsUsedForNode(node);
         }
     }

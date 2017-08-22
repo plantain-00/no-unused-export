@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const postcss_less_1 = require("postcss-less");
+const postcss_scss_1 = require("postcss-scss");
 const fs = require("fs");
 function check(uniqFiles) {
     const variables = new Map();
     function collectVariablesFromNode(file, node, markedPublic) {
         if (node.type === "decl") {
-            if (!markedPublic && node.prop.startsWith("@") && !variables.has(node.prop)) {
+            if (!markedPublic && node.prop.startsWith("$") && !variables.has(node.prop)) {
                 const variableName = node.prop.substring(1);
                 variables.set(variableName, {
                     file,
@@ -33,7 +33,7 @@ function check(uniqFiles) {
     }
     const roots = [];
     for (const fileName of uniqFiles) {
-        const root = postcss_less_1.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
+        const root = postcss_scss_1.parse(fs.readFileSync(fileName, { encoding: "utf8" }));
         roots.push({ fileName, nodes: root.nodes });
         let markedPublic = false;
         for (const node of root.nodes) {
@@ -46,8 +46,7 @@ function check(uniqFiles) {
                 const referencedVariableNames = new Set();
                 for (const [variableName] of variables) {
                     if (!referencedVariableNames.has(variableName)
-                        && (node.value.includes(`@${variableName}`)
-                            || node.value.includes(`@{${variableName}}`))) {
+                        && node.value.includes(`$${variableName}`)) {
                         referencedVariableNames.add(variableName);
                     }
                 }

@@ -6,6 +6,7 @@ import * as minimatch from "minimatch";
 import * as packageJson from "../package.json";
 import * as ts from "./ts";
 import * as less from "./less";
+import * as scss from "./scss";
 
 let suppressError = false;
 
@@ -87,6 +88,18 @@ async function executeCommandLine() {
             printInConsole(`unreferenced less variables found, please remove it or add "@public":`);
             for (const error of unusedVariables) {
                 printInConsole(`${error.file}:${error.line}:${error.character} unreferenced less ${error.type}: ${error.name}`);
+            }
+            errorCount += unusedVariables.length;
+        }
+    }
+
+    const scssFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".scss"));
+    if (scssFiles.length > 0) {
+        const { unusedVariables } = scss.check(scssFiles);
+        if (unusedVariables.length > 0) {
+            printInConsole(`unreferenced scss variables found, please remove it or add "@public":`);
+            for (const error of unusedVariables) {
+                printInConsole(`${error.file}:${error.line}:${error.character} unreferenced scss ${error.type}: ${error.name}`);
             }
             errorCount += unusedVariables.length;
         }
