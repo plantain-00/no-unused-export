@@ -1,6 +1,7 @@
 import * as ts from "typescript";
 import * as fs from "fs";
 import * as path from "path";
+import * as parse5 from "parse5";
 
 export function check(uniqFiles: string[]) {
     const languageService = ts.createLanguageService({
@@ -126,7 +127,7 @@ export function check(uniqFiles: string[]) {
                                                     if (text) {
                                                         for (const member of members) {
                                                             if (!referencedMembers.has(member)
-                                                                && text.includes((member.name as ts.Identifier).text)) {
+                                                                && isUsedInTemplate((member.name as ts.Identifier).text, text)) {
                                                                 referencedMembers.add(member);
                                                             }
                                                         }
@@ -136,16 +137,14 @@ export function check(uniqFiles: string[]) {
                                                         const elements = (property.initializer as ts.ArrayLiteralExpression).elements;
                                                         for (const member of members) {
                                                             if (!referencedMembers.has(member)
-                                                                && elements.some(e => e.kind === ts.SyntaxKind.StringLiteral
-                                                                    && (e as ts.StringLiteral).text === (member.name as ts.Identifier).text)) {
+                                                                && elements.some(e => getText(program, languageService, file, e) === (member.name as ts.Identifier).text)) {
                                                                 referencedMembers.add(member);
                                                             }
                                                         }
                                                     }
                                                 } else if (propertyName === "templateUrl") {
-                                                    if (property.initializer.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-                                                        || property.initializer.kind === ts.SyntaxKind.StringLiteral) {
-                                                        const url = (property.initializer as ts.NoSubstitutionTemplateLiteral | ts.StringLiteral).text;
+                                                    const url = getText(program, languageService, file, property.initializer);
+                                                    if (url) {
                                                         let text: string | undefined;
                                                         try {
                                                             text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: "utf8" });
@@ -155,7 +154,7 @@ export function check(uniqFiles: string[]) {
                                                         if (text) {
                                                             for (const member of members) {
                                                                 if (!referencedMembers.has(member)
-                                                                    && text.includes((member.name as ts.Identifier).text)) {
+                                                                    && isUsedInTemplate((member.name as ts.Identifier).text, text)) {
                                                                     referencedMembers.add(member);
                                                                 }
                                                             }
@@ -166,12 +165,15 @@ export function check(uniqFiles: string[]) {
                                                         const hostProperties = (property.initializer as ts.ObjectLiteralExpression).properties;
                                                         for (const hostProperty of hostProperties) {
                                                             if (hostProperty.kind === ts.SyntaxKind.PropertyAssignment) {
-                                                                const text = getText(program, languageService, file, hostProperty.initializer);
-                                                                if (text) {
-                                                                    for (const member of members) {
-                                                                        if (!referencedMembers.has(member)
-                                                                            && text.includes((member.name as ts.Identifier).text)) {
-                                                                            referencedMembers.add(member);
+                                                                const key = getText(program, languageService, file, hostProperty.name);
+                                                                if (key && isAngularAttrName(key)) {
+                                                                    const text = getText(program, languageService, file, hostProperty.initializer);
+                                                                    if (text) {
+                                                                        for (const member of members) {
+                                                                            if (!referencedMembers.has(member)
+                                                                                && isUsedInTemplate((member.name as ts.Identifier).text, text)) {
+                                                                                referencedMembers.add(member);
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -201,18 +203,69 @@ export function check(uniqFiles: string[]) {
     return { unusedExportsErrors, unreferencedMembersErrors };
 }
 
-function getText(program: ts.Program, languageService: ts.LanguageService, file: string, initializer: ts.Expression) {
-    if (initializer.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-        || initializer.kind === ts.SyntaxKind.StringLiteral) {
-        return (initializer as ts.NoSubstitutionTemplateLiteral | ts.StringLiteral).text;
-    } else if (initializer.kind === ts.SyntaxKind.Identifier) {
-        const identifier = initializer as ts.Identifier;
+function isUsedInTemplate(memberName: string, html: string) {
+    const fragment = parse5.parseFragment(html) as parse5.AST.Default.DocumentFragment;
+    for (const childNode of fragment.childNodes) {
+        const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
+        if (isUsed) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function isUsedInNode(memberName: string, node: parse5.AST.Default.Node) {
+    if (node.nodeName.startsWith("#")) {
+        if (node.nodeName === "#text") {
+            const textNode = node as parse5.AST.Default.TextNode;
+            return textNode.value && textNode.value.includes(memberName);
+        }
+    } else {
+        const elementNode = node as parse5.AST.Default.Element;
+        if (elementNode.attrs) {
+            for (const attr of elementNode.attrs) {
+                const isUsed = (isVuejsAttrName(attr.name) || isAngularAttrName(attr.name)) && attr.value && attr.value.includes(memberName);
+                if (isUsed) {
+                    return true;
+                }
+            }
+        }
+        if (elementNode.childNodes) {
+            for (const childNode of elementNode.childNodes) {
+                const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
+                if (isUsed) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+function isVuejsAttrName(attrName: string) {
+    return attrName.startsWith("v-")
+        || attrName.startsWith(":")
+        || attrName.startsWith("@");
+}
+
+function isAngularAttrName(attrName: string) {
+    return attrName.startsWith("*ng")
+        || (attrName.startsWith("[") && attrName.endsWith("]"))
+        || (attrName.startsWith("(") && attrName.endsWith(")"));
+}
+
+function getText(program: ts.Program, languageService: ts.LanguageService, file: string, node: ts.Node): string | undefined {
+    if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
+        || node.kind === ts.SyntaxKind.StringLiteral) {
+        return (node as ts.NoSubstitutionTemplateLiteral | ts.StringLiteral).text;
+    } else if (node.kind === ts.SyntaxKind.Identifier) {
+        const identifier = node as ts.Identifier;
         const definitions = languageService.getDefinitionAtPosition(file, identifier.end);
         if (definitions && definitions.length > 0) {
             const definition = definitions[0];
             const child = findNodeAtDefinition(program, definition);
             if (child && child.kind === ts.SyntaxKind.VariableStatement) {
-                return getVariableValue(child, definition.name);
+                return getVariableValue(child, definition.name, program, languageService, file);
             }
         }
     }
@@ -253,7 +306,7 @@ function findNodeAtDefinition(program: ts.Program, definition: ts.DefinitionInfo
     return result;
 }
 
-function getVariableValue(child: ts.Node, variableName: string) {
+function getVariableValue(child: ts.Node, variableName: string, program: ts.Program, languageService: ts.LanguageService, file: string) {
     const declarations = (child as ts.VariableStatement).declarationList.declarations;
     for (const declaration of declarations) {
         if (declaration.kind === ts.SyntaxKind.VariableDeclaration) {
@@ -261,10 +314,8 @@ function getVariableValue(child: ts.Node, variableName: string) {
             if (name.kind === ts.SyntaxKind.Identifier
                 && (name as ts.Identifier).text === variableName) {
                 const initializer = (declaration as ts.VariableDeclaration).initializer;
-                if (initializer
-                    && (initializer.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-                        || initializer.kind === ts.SyntaxKind.StringLiteral)) {
-                    return (initializer as ts.NoSubstitutionTemplateLiteral | ts.StringLiteral).text;
+                if (initializer) {
+                    return getText(program, languageService, file, initializer);
                 }
             }
         }

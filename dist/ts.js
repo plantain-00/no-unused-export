@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ts = require("typescript");
 const fs = require("fs");
 const path = require("path");
+const parse5 = require("parse5");
 function check(uniqFiles) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {
@@ -132,7 +133,7 @@ function check(uniqFiles) {
                                                     if (text) {
                                                         for (const member of members) {
                                                             if (!referencedMembers.has(member)
-                                                                && text.includes(member.name.text)) {
+                                                                && isUsedInTemplate(member.name.text, text)) {
                                                                 referencedMembers.add(member);
                                                             }
                                                         }
@@ -143,17 +144,15 @@ function check(uniqFiles) {
                                                         const elements = property.initializer.elements;
                                                         for (const member of members) {
                                                             if (!referencedMembers.has(member)
-                                                                && elements.some(e => e.kind === ts.SyntaxKind.StringLiteral
-                                                                    && e.text === member.name.text)) {
+                                                                && elements.some(e => getText(program, languageService, file, e) === member.name.text)) {
                                                                 referencedMembers.add(member);
                                                             }
                                                         }
                                                     }
                                                 }
                                                 else if (propertyName === "templateUrl") {
-                                                    if (property.initializer.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-                                                        || property.initializer.kind === ts.SyntaxKind.StringLiteral) {
-                                                        const url = property.initializer.text;
+                                                    const url = getText(program, languageService, file, property.initializer);
+                                                    if (url) {
                                                         let text;
                                                         try {
                                                             text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: "utf8" });
@@ -164,7 +163,7 @@ function check(uniqFiles) {
                                                         if (text) {
                                                             for (const member of members) {
                                                                 if (!referencedMembers.has(member)
-                                                                    && text.includes(member.name.text)) {
+                                                                    && isUsedInTemplate(member.name.text, text)) {
                                                                     referencedMembers.add(member);
                                                                 }
                                                             }
@@ -176,12 +175,15 @@ function check(uniqFiles) {
                                                         const hostProperties = property.initializer.properties;
                                                         for (const hostProperty of hostProperties) {
                                                             if (hostProperty.kind === ts.SyntaxKind.PropertyAssignment) {
-                                                                const text = getText(program, languageService, file, hostProperty.initializer);
-                                                                if (text) {
-                                                                    for (const member of members) {
-                                                                        if (!referencedMembers.has(member)
-                                                                            && text.includes(member.name.text)) {
-                                                                            referencedMembers.add(member);
+                                                                const key = getText(program, languageService, file, hostProperty.name);
+                                                                if (key && isAngularAttrName(key)) {
+                                                                    const text = getText(program, languageService, file, hostProperty.initializer);
+                                                                    if (text) {
+                                                                        for (const member of members) {
+                                                                            if (!referencedMembers.has(member)
+                                                                                && isUsedInTemplate(member.name.text, text)) {
+                                                                                referencedMembers.add(member);
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -210,19 +212,67 @@ function check(uniqFiles) {
     return { unusedExportsErrors, unreferencedMembersErrors };
 }
 exports.check = check;
-function getText(program, languageService, file, initializer) {
-    if (initializer.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-        || initializer.kind === ts.SyntaxKind.StringLiteral) {
-        return initializer.text;
+function isUsedInTemplate(memberName, html) {
+    const fragment = parse5.parseFragment(html);
+    for (const childNode of fragment.childNodes) {
+        const isUsed = isUsedInNode(memberName, childNode);
+        if (isUsed) {
+            return true;
+        }
     }
-    else if (initializer.kind === ts.SyntaxKind.Identifier) {
-        const identifier = initializer;
+    return false;
+}
+function isUsedInNode(memberName, node) {
+    if (node.nodeName.startsWith("#")) {
+        if (node.nodeName === "#text") {
+            const textNode = node;
+            return textNode.value && textNode.value.includes(memberName);
+        }
+    }
+    else {
+        const elementNode = node;
+        if (elementNode.attrs) {
+            for (const attr of elementNode.attrs) {
+                const isUsed = (isVuejsAttrName(attr.name) || isAngularAttrName(attr.name)) && attr.value && attr.value.includes(memberName);
+                if (isUsed) {
+                    return true;
+                }
+            }
+        }
+        if (elementNode.childNodes) {
+            for (const childNode of elementNode.childNodes) {
+                const isUsed = isUsedInNode(memberName, childNode);
+                if (isUsed) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+function isVuejsAttrName(attrName) {
+    return attrName.startsWith("v-")
+        || attrName.startsWith(":")
+        || attrName.startsWith("@");
+}
+function isAngularAttrName(attrName) {
+    return attrName.startsWith("*ng")
+        || (attrName.startsWith("[") && attrName.endsWith("]"))
+        || (attrName.startsWith("(") && attrName.endsWith(")"));
+}
+function getText(program, languageService, file, node) {
+    if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
+        || node.kind === ts.SyntaxKind.StringLiteral) {
+        return node.text;
+    }
+    else if (node.kind === ts.SyntaxKind.Identifier) {
+        const identifier = node;
         const definitions = languageService.getDefinitionAtPosition(file, identifier.end);
         if (definitions && definitions.length > 0) {
             const definition = definitions[0];
             const child = findNodeAtDefinition(program, definition);
             if (child && child.kind === ts.SyntaxKind.VariableStatement) {
-                return getVariableValue(child, definition.name);
+                return getVariableValue(child, definition.name, program, languageService, file);
             }
         }
     }
@@ -258,7 +308,7 @@ function findNodeAtDefinition(program, definition) {
     });
     return result;
 }
-function getVariableValue(child, variableName) {
+function getVariableValue(child, variableName, program, languageService, file) {
     const declarations = child.declarationList.declarations;
     for (const declaration of declarations) {
         if (declaration.kind === ts.SyntaxKind.VariableDeclaration) {
@@ -266,10 +316,8 @@ function getVariableValue(child, variableName) {
             if (name.kind === ts.SyntaxKind.Identifier
                 && name.text === variableName) {
                 const initializer = declaration.initializer;
-                if (initializer
-                    && (initializer.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-                        || initializer.kind === ts.SyntaxKind.StringLiteral)) {
-                    return initializer.text;
+                if (initializer) {
+                    return getText(program, languageService, file, initializer);
                 }
             }
         }
