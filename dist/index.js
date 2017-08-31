@@ -44,8 +44,16 @@ async function executeCommandLine() {
     if (inputFiles.length === 0) {
         throw new Error("expect the path of source files");
     }
-    const excludeFilesString = argv.e || argv.exclude;
-    const excludeFiles = excludeFilesString ? excludeFilesString.split(",") : [];
+    const exclude = argv.e || argv.exclude;
+    let excludeFiles = [];
+    if (Array.isArray(exclude)) {
+        for (const e of exclude) {
+            excludeFiles = excludeFiles.concat(e.split(","));
+        }
+    }
+    else if (exclude) {
+        excludeFiles = excludeFiles.concat(exclude.split(","));
+    }
     const files = await Promise.all(inputFiles.map(file => globAsync(file)));
     let uniqFiles = uniq(flatten(files));
     if (excludeFiles && excludeFiles.length > 0) {

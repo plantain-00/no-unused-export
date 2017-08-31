@@ -26,7 +26,7 @@ A CLI tool to check whether exported things in a module is used by other modules
 
 `no-unused-export "src/*.ts" --exclude "src/*.d.ts"`
 
-multiple `exclude`s can be seperated by `,`
+`--exclude` is repeatable
 
 ##### exclude `export`s
 
