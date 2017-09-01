@@ -55,6 +55,7 @@ class Df {
 class Dg {
     d1: number;
     d2: number;
+    d3: number;
 }
 
 const a = new Dd().d4;

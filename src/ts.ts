@@ -205,20 +205,22 @@ export function check(uniqFiles: string[]) {
 
 function isUsedInTemplate(memberName: string, html: string) {
     const fragment = parse5.parseFragment(html) as parse5.AST.Default.DocumentFragment;
-    for (const childNode of fragment.childNodes) {
-        const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
-        if (isUsed) {
-            return true;
-        }
-    }
-    return false;
+    return isUsedInNode(memberName, fragment);
 }
 
-function isUsedInNode(memberName: string, node: parse5.AST.Default.Node) {
+function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean {
     if (node.nodeName.startsWith("#")) {
         if (node.nodeName === "#text") {
             const textNode = node as parse5.AST.Default.TextNode;
-            return textNode.value && textNode.value.includes(memberName);
+            return !!textNode.value && textNode.value.includes(memberName);
+        } else if (node.nodeName === "#document-fragment") {
+            for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
+                const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
+                if (isUsed) {
+                    return true;
+                }
+            }
+            return false;
         }
     } else {
         const elementNode = node as parse5.AST.Default.Element;
@@ -237,6 +239,10 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node) {
                     return true;
                 }
             }
+        }
+        const content: parse5.AST.Default.DocumentFragment = (elementNode as any).content;
+        if (content) {
+            return isUsedInNode(memberName, content);
         }
     }
     return false;

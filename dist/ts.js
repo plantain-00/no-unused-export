@@ -214,19 +214,22 @@ function check(uniqFiles) {
 exports.check = check;
 function isUsedInTemplate(memberName, html) {
     const fragment = parse5.parseFragment(html);
-    for (const childNode of fragment.childNodes) {
-        const isUsed = isUsedInNode(memberName, childNode);
-        if (isUsed) {
-            return true;
-        }
-    }
-    return false;
+    return isUsedInNode(memberName, fragment);
 }
 function isUsedInNode(memberName, node) {
     if (node.nodeName.startsWith("#")) {
         if (node.nodeName === "#text") {
             const textNode = node;
-            return textNode.value && textNode.value.includes(memberName);
+            return !!textNode.value && textNode.value.includes(memberName);
+        }
+        else if (node.nodeName === "#document-fragment") {
+            for (const childNode of node.childNodes) {
+                const isUsed = isUsedInNode(memberName, childNode);
+                if (isUsed) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
     else {
@@ -246,6 +249,10 @@ function isUsedInNode(memberName, node) {
                     return true;
                 }
             }
+        }
+        const content = elementNode.content;
+        if (content) {
+            return isUsedInNode(memberName, content);
         }
     }
     return false;
