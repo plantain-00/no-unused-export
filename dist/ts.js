@@ -220,7 +220,10 @@ function isUsedInNode(memberName, node) {
     if (node.nodeName.startsWith("#")) {
         if (node.nodeName === "#text") {
             const textNode = node;
-            return !!textNode.value && textNode.value.includes(memberName);
+            return !!textNode.value
+                && textNode.value.includes(memberName)
+                && !new RegExp(`{{.*'.*${memberName}.*'.*}}`).test(textNode.value)
+                && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value);
         }
         else if (node.nodeName === "#document-fragment") {
             for (const childNode of node.childNodes) {
@@ -236,7 +239,11 @@ function isUsedInNode(memberName, node) {
         const elementNode = node;
         if (elementNode.attrs) {
             for (const attr of elementNode.attrs) {
-                const isUsed = (isVuejsAttrName(attr.name) || isAngularAttrName(attr.name)) && attr.value && attr.value.includes(memberName);
+                const isUsed = (isVuejsAttrName(attr.name) || isAngularAttrName(attr.name))
+                    && attr.value
+                    && attr.value.includes(memberName)
+                    && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
+                    && !new RegExp(`".*${memberName}.*"`).test(attr.value);
                 if (isUsed) {
                     return true;
                 }
