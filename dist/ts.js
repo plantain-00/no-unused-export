@@ -35,7 +35,7 @@ function check(uniqFiles) {
         if (identifier) {
             const references = languageService.getReferencesAtPosition(file, identifier.end);
             if (references && references.every(r => r.fileName === file)) {
-                const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.end - identifier.text.length - 1);
+                const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.getStart(sourceFile));
                 unusedExportsErrors.push({ file, name: identifier.text, line, character, type });
             }
         }
@@ -202,7 +202,7 @@ function check(uniqFiles) {
                 for (const member of members) {
                     if (!referencedMembers.has(member)) {
                         const identifier = member.name;
-                        const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.end - identifier.text.length - 1);
+                        const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.getStart(sourceFile));
                         unreferencedMembersErrors.push({ file, name: identifier.text, line, character, type: `class ${classDeclaration.name.text} member` });
                     }
                 }

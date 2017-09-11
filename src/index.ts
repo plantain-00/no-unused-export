@@ -74,7 +74,7 @@ async function executeCommandLine() {
         if (unusedExportsErrors.length > 0) {
             printInConsole(`unused exported things found, please remove "export" or add "@public":`);
             for (const error of unusedExportsErrors) {
-                printInConsole(`${error.file}:${error.line + 1}:${error.character + 2} unused exported ${error.type}: ${error.name}`);
+                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} unused exported ${error.type}: ${error.name}`);
             }
             errorCount += unusedExportsErrors.length;
 
@@ -82,7 +82,7 @@ async function executeCommandLine() {
         if (unreferencedMembersErrors.length > 0) {
             printInConsole(`unreferenced members found, please add "private" or "public":`);
             for (const error of unreferencedMembersErrors) {
-                printInConsole(`${error.file}:${error.line + 1}:${error.character + 2} unreferenced ${error.type}: ${error.name}`);
+                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} unreferenced ${error.type}: ${error.name}`);
             }
             errorCount += unreferencedMembersErrors.length;
         }
