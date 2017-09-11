@@ -314,13 +314,16 @@ const hookNames = [
     "ngAfterViewChecked",
 ];
 function findNodeAtDefinition(program, definition) {
-    let result;
-    program.getSourceFile(definition.fileName).forEachChild(child => {
-        if (child.pos < definition.textSpan.start && child.end > definition.textSpan.start + definition.textSpan.length) {
-            result = child;
-        }
-    });
-    return result;
+    const sourceFile = program.getSourceFile(definition.fileName);
+    if (sourceFile) {
+        return sourceFile.forEachChild(child => {
+            if (child.pos < definition.textSpan.start && child.end > definition.textSpan.start + definition.textSpan.length) {
+                return child;
+            }
+            return undefined;
+        });
+    }
+    return undefined;
 }
 function getVariableValue(child, variableName, program, languageService, file) {
     const declarations = child.declarationList.declarations;

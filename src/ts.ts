@@ -310,13 +310,16 @@ const hookNames = [
 ];
 
 function findNodeAtDefinition(program: ts.Program, definition: ts.DefinitionInfo) {
-    let result: ts.Node | undefined;
-    program.getSourceFile(definition.fileName).forEachChild(child => {
-        if (child.pos < definition.textSpan.start && child.end > definition.textSpan.start + definition.textSpan.length) {
-            result = child;
-        }
-    });
-    return result;
+    const sourceFile = program.getSourceFile(definition.fileName);
+    if (sourceFile) {
+        return sourceFile.forEachChild(child => {
+            if (child.pos < definition.textSpan.start && child.end > definition.textSpan.start + definition.textSpan.length) {
+                return child;
+            }
+            return undefined;
+        });
+    }
+    return undefined;
 }
 
 function getVariableValue(child: ts.Node, variableName: string, program: ts.Program, languageService: ts.LanguageService, file: string) {
