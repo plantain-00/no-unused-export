@@ -1,8 +1,5 @@
 import * as minimist from "minimist";
 import * as glob from "glob";
-import flatten = require("lodash.flatten");
-import uniq = require("lodash.uniq");
-import * as minimatch from "minimatch";
 import * as packageJson from "../package.json";
 import * as ts from "./ts";
 import * as less from "./less";
@@ -22,9 +19,9 @@ function showToolVersion() {
     printInConsole(`Version: ${packageJson.version}`);
 }
 
-function globAsync(pattern: string) {
+function globAsync(pattern: string, ignore?: string | string[]) {
     return new Promise<string[]>((resolve, reject) => {
-        glob(pattern, (error, matches) => {
+        glob(pattern, { ignore }, (error, matches) => {
             if (error) {
                 reject(error);
             } else {
@@ -60,11 +57,7 @@ async function executeCommandLine() {
         excludeFiles = excludeFiles.concat(exclude.split(","));
     }
 
-    const files = await Promise.all(inputFiles.map(file => globAsync(file)));
-    let uniqFiles = uniq(flatten(files));
-    if (excludeFiles && excludeFiles.length > 0) {
-        uniqFiles = uniqFiles.filter(file => excludeFiles.every(excludeFile => !minimatch(file, excludeFile)));
-    }
+    const uniqFiles = await globAsync(inputFiles.length === 1 ? inputFiles[0] : `{${inputFiles.join(",")}}`, excludeFiles);
 
     let errorCount = 0;
 

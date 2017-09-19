@@ -2,9 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const minimist = require("minimist");
 const glob = require("glob");
-const flatten = require("lodash.flatten");
-const uniq = require("lodash.uniq");
-const minimatch = require("minimatch");
 const packageJson = require("../package.json");
 const ts = require("./ts");
 const less = require("./less");
@@ -20,9 +17,9 @@ function printInConsole(message) {
 function showToolVersion() {
     printInConsole(`Version: ${packageJson.version}`);
 }
-function globAsync(pattern) {
+function globAsync(pattern, ignore) {
     return new Promise((resolve, reject) => {
-        glob(pattern, (error, matches) => {
+        glob(pattern, { ignore }, (error, matches) => {
             if (error) {
                 reject(error);
             }
@@ -54,11 +51,7 @@ async function executeCommandLine() {
     else if (exclude) {
         excludeFiles = excludeFiles.concat(exclude.split(","));
     }
-    const files = await Promise.all(inputFiles.map(file => globAsync(file)));
-    let uniqFiles = uniq(flatten(files));
-    if (excludeFiles && excludeFiles.length > 0) {
-        uniqFiles = uniqFiles.filter(file => excludeFiles.every(excludeFile => !minimatch(file, excludeFile)));
-    }
+    const uniqFiles = await globAsync(inputFiles.length === 1 ? inputFiles[0] : `{${inputFiles.join(",")}}`, excludeFiles);
     let errorCount = 0;
     const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".ts") || file.toLowerCase().endsWith(".tsx"));
     if (tsFiles.length > 0) {
