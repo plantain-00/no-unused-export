@@ -41,6 +41,7 @@ function check(uniqFiles) {
         }
     }
     const unreferencedMembersErrors = [];
+    const canOnlyBePublicErrors = [];
     for (const file of uniqFiles) {
         const sourceFile = program.getSourceFile(file);
         sourceFile.forEachChild(node => {
@@ -130,14 +131,7 @@ function check(uniqFiles) {
                                                 const propertyName = property.name.text;
                                                 if (propertyName === "template") {
                                                     const text = getText(program, languageService, file, property.initializer);
-                                                    if (text) {
-                                                        for (const member of members) {
-                                                            if (!referencedMembers.has(member)
-                                                                && isUsedInTemplate(member.name.text, text)) {
-                                                                referencedMembers.add(member);
-                                                            }
-                                                        }
-                                                    }
+                                                    checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                 }
                                                 else if (propertyName === "props") {
                                                     if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
@@ -160,14 +154,7 @@ function check(uniqFiles) {
                                                         catch (error) {
                                                             // no action
                                                         }
-                                                        if (text) {
-                                                            for (const member of members) {
-                                                                if (!referencedMembers.has(member)
-                                                                    && isUsedInTemplate(member.name.text, text)) {
-                                                                    referencedMembers.add(member);
-                                                                }
-                                                            }
-                                                        }
+                                                        checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                     }
                                                 }
                                                 else if (propertyName === "host") {
@@ -178,14 +165,7 @@ function check(uniqFiles) {
                                                                 const key = getText(program, languageService, file, hostProperty.name);
                                                                 if (key && isAngularAttrName(key)) {
                                                                     const text = getText(program, languageService, file, hostProperty.initializer);
-                                                                    if (text) {
-                                                                        for (const member of members) {
-                                                                            if (!referencedMembers.has(member)
-                                                                                && isUsedInTemplate(member.name.text, text)) {
-                                                                                referencedMembers.add(member);
-                                                                            }
-                                                                        }
-                                                                    }
+                                                                    checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                                 }
                                                             }
                                                         }
@@ -209,12 +189,31 @@ function check(uniqFiles) {
             }
         });
     }
-    return { unusedExportsErrors, unreferencedMembersErrors };
+    return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors };
 }
 exports.check = check;
-function isUsedInTemplate(memberName, html) {
-    const fragment = parse5.parseFragment(html);
-    return isUsedInNode(memberName, fragment);
+function checkMemberUsedInTemplate(members, referencedMembers, templateText, canOnlyBePublicErrors, file, sourceFile, classDeclaration) {
+    if (templateText && members.length > 0) {
+        const fragment = parse5.parseFragment(templateText);
+        for (const member of members) {
+            const identifier = member.name;
+            if (identifier) {
+                const templateType = isUsedInNode(identifier.text, fragment);
+                if (templateType) {
+                    if (!referencedMembers.has(member)) {
+                        referencedMembers.add(member);
+                    }
+                    if (templateType !== "vue" /* vue */
+                        && member.modifiers
+                        && member.modifiers.some(m => m.kind === ts.SyntaxKind.PrivateKeyword
+                            || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
+                        const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.getStart(sourceFile));
+                        canOnlyBePublicErrors.push({ file, name: identifier.text, line, character, type: `class ${classDeclaration.name.text} member` });
+                    }
+                }
+            }
+        }
+    }
 }
 function isUsedInNode(memberName, node) {
     if (node.nodeName.startsWith("#")) {
@@ -229,7 +228,7 @@ function isUsedInNode(memberName, node) {
             for (const childNode of node.childNodes) {
                 const isUsed = isUsedInNode(memberName, childNode);
                 if (isUsed) {
-                    return true;
+                    return isUsed;
                 }
             }
             return false;
@@ -239,13 +238,21 @@ function isUsedInNode(memberName, node) {
         const elementNode = node;
         if (elementNode.attrs) {
             for (const attr of elementNode.attrs) {
-                const isUsed = (isVuejsAttrName(attr.name) || isAngularAttrName(attr.name))
-                    && attr.value
-                    && attr.value.includes(memberName)
-                    && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
-                    && !new RegExp(`".*${memberName}.*"`).test(attr.value);
-                if (isUsed) {
-                    return true;
+                let templateType;
+                if (isVuejsAttrName(attr.name)) {
+                    templateType = "vue" /* vue */;
+                }
+                else if (isAngularAttrName(attr.name)) {
+                    templateType = "angular" /* angular */;
+                }
+                if (templateType) {
+                    const isUsed = attr.value
+                        && attr.value.includes(memberName)
+                        && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
+                        && !new RegExp(`".*${memberName}.*"`).test(attr.value);
+                    if (isUsed) {
+                        return templateType;
+                    }
                 }
             }
         }
@@ -253,7 +260,7 @@ function isUsedInNode(memberName, node) {
             for (const childNode of elementNode.childNodes) {
                 const isUsed = isUsedInNode(memberName, childNode);
                 if (isUsed) {
-                    return true;
+                    return isUsed;
                 }
             }
         }

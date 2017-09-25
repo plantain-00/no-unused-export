@@ -40,6 +40,7 @@ export function check(uniqFiles: string[]) {
         }
     }
     const unreferencedMembersErrors: CheckError[] = [];
+    const canOnlyBePublicErrors: CheckError[] = [];
     for (const file of uniqFiles) {
         const sourceFile = program.getSourceFile(file);
         sourceFile.forEachChild(node => {
@@ -124,14 +125,7 @@ export function check(uniqFiles: string[]) {
                                                 const propertyName = (property.name as ts.Identifier).text;
                                                 if (propertyName === "template") {
                                                     const text = getText(program, languageService, file, property.initializer);
-                                                    if (text) {
-                                                        for (const member of members) {
-                                                            if (!referencedMembers.has(member)
-                                                                && isUsedInTemplate((member.name as ts.Identifier).text, text)) {
-                                                                referencedMembers.add(member);
-                                                            }
-                                                        }
-                                                    }
+                                                    checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                 } else if (propertyName === "props") {
                                                     if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
                                                         const elements = (property.initializer as ts.ArrayLiteralExpression).elements;
@@ -151,14 +145,7 @@ export function check(uniqFiles: string[]) {
                                                         } catch (error) {
                                                             // no action
                                                         }
-                                                        if (text) {
-                                                            for (const member of members) {
-                                                                if (!referencedMembers.has(member)
-                                                                    && isUsedInTemplate((member.name as ts.Identifier).text, text)) {
-                                                                    referencedMembers.add(member);
-                                                                }
-                                                            }
-                                                        }
+                                                        checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                     }
                                                 } else if (propertyName === "host") {
                                                     if (property.initializer.kind === ts.SyntaxKind.ObjectLiteralExpression) {
@@ -168,14 +155,7 @@ export function check(uniqFiles: string[]) {
                                                                 const key = getText(program, languageService, file, hostProperty.name);
                                                                 if (key && isAngularAttrName(key)) {
                                                                     const text = getText(program, languageService, file, hostProperty.initializer);
-                                                                    if (text) {
-                                                                        for (const member of members) {
-                                                                            if (!referencedMembers.has(member)
-                                                                                && isUsedInTemplate((member.name as ts.Identifier).text, text)) {
-                                                                                referencedMembers.add(member);
-                                                                            }
-                                                                        }
-                                                                    }
+                                                                    checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                                 }
                                                             }
                                                         }
@@ -200,15 +180,39 @@ export function check(uniqFiles: string[]) {
             }
         });
     }
-    return { unusedExportsErrors, unreferencedMembersErrors };
+    return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors };
 }
 
-function isUsedInTemplate(memberName: string, html: string) {
-    const fragment = parse5.parseFragment(html) as parse5.AST.Default.DocumentFragment;
-    return isUsedInNode(memberName, fragment);
+function checkMemberUsedInTemplate(members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
+    if (templateText && members.length > 0) {
+        const fragment = parse5.parseFragment(templateText) as parse5.AST.Default.DocumentFragment;
+        for (const member of members) {
+            const identifier = member.name as ts.Identifier;
+            if (identifier) {
+                const templateType = isUsedInNode(identifier.text, fragment);
+                if (templateType) {
+                    if (!referencedMembers.has(member)) {
+                        referencedMembers.add(member);
+                    }
+                    if (templateType !== TemplateType.vue
+                        && member.modifiers
+                        && member.modifiers.some(m => m.kind === ts.SyntaxKind.PrivateKeyword
+                            || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
+                        const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.getStart(sourceFile));
+                        canOnlyBePublicErrors.push({ file, name: identifier.text, line, character, type: `class ${classDeclaration.name!.text} member` });
+                    }
+                }
+            }
+        }
+    }
 }
 
-function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean {
+const enum TemplateType {
+    angular = "angular",
+    vue = "vue",
+}
+
+function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean | TemplateType {
     if (node.nodeName.startsWith("#")) {
         if (node.nodeName === "#text") {
             const textNode = node as parse5.AST.Default.TextNode;
@@ -220,7 +224,7 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolea
             for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
                 const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
                 if (isUsed) {
-                    return true;
+                    return isUsed;
                 }
             }
             return false;
@@ -229,13 +233,20 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolea
         const elementNode = node as parse5.AST.Default.Element;
         if (elementNode.attrs) {
             for (const attr of elementNode.attrs) {
-                const isUsed = (isVuejsAttrName(attr.name) || isAngularAttrName(attr.name))
-                    && attr.value
-                    && attr.value.includes(memberName)
-                    && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
-                    && !new RegExp(`".*${memberName}.*"`).test(attr.value);
-                if (isUsed) {
-                    return true;
+                let templateType: TemplateType | undefined;
+                if (isVuejsAttrName(attr.name)) {
+                    templateType = TemplateType.vue;
+                } else if (isAngularAttrName(attr.name)) {
+                    templateType = TemplateType.angular;
+                }
+                if (templateType) {
+                    const isUsed = attr.value
+                        && attr.value.includes(memberName)
+                        && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
+                        && !new RegExp(`".*${memberName}.*"`).test(attr.value);
+                    if (isUsed) {
+                        return templateType;
+                    }
                 }
             }
         }
@@ -243,7 +254,7 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolea
             for (const childNode of elementNode.childNodes) {
                 const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
                 if (isUsed) {
-                    return true;
+                    return isUsed;
                 }
             }
         }

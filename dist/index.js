@@ -55,7 +55,7 @@ async function executeCommandLine() {
     let errorCount = 0;
     const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".ts") || file.toLowerCase().endsWith(".tsx"));
     if (tsFiles.length > 0) {
-        const { unusedExportsErrors, unreferencedMembersErrors } = ts.check(tsFiles);
+        const { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors } = ts.check(tsFiles);
         if (unusedExportsErrors.length > 0) {
             printInConsole(`unused exported things found, please remove "export" or add "@public":`);
             for (const error of unusedExportsErrors) {
@@ -69,6 +69,13 @@ async function executeCommandLine() {
                 printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} unreferenced ${error.type}: ${error.name}`);
             }
             errorCount += unreferencedMembersErrors.length;
+        }
+        if (canOnlyBePublicErrors.length > 0) {
+            printInConsole(`non-public members that used in template found, will be error when it works with angular AOT, please remove the modifier:`);
+            for (const error of canOnlyBePublicErrors) {
+                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} non-public ${error.type}: ${error.name}`);
+            }
+            errorCount += canOnlyBePublicErrors.length;
         }
     }
     const lessFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".less"));

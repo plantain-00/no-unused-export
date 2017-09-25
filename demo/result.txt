@@ -2,14 +2,16 @@ unused exported things found, please remove "export" or add "@public":
 demo/foo.ts:1:17 unused exported function: aa
 demo/foo.ts:7:13 unused exported type: Cc
 demo/foo.ts:15:14 unused exported class: Dd
-demo/foo.ts:65:18 unused exported interface: Ee
-demo/foo.ts:74:14 unused exported variable: gg
+demo/foo.ts:66:18 unused exported interface: Ee
+demo/foo.ts:75:14 unused exported variable: gg
 unreferenced members found, please add "private" or "public":
 demo/foo.ts:18:5 unreferenced class Dd member: d3
 demo/foo.ts:23:5 unreferenced class Dd member: d6
 demo/foo.ts:24:5 unreferenced class Dd member: d7
-demo/foo.ts:41:5 unreferenced class Df member: d1
-demo/foo.ts:58:5 unreferenced class Dg member: d1
+demo/foo.ts:42:5 unreferenced class Df member: d1
+demo/foo.ts:59:5 unreferenced class Dg member: d1
+non-public members that used in template found, will be error when it works with angular AOT, please remove the modifier:
+demo/foo.ts:25:13 non-public class Dd member: d8
 unreferenced less variables found, please remove it or add "@public":
 demo/variable.less:4:1 unreferenced less variable: variable3
 unreferenced scss variables found, please remove it or add "@public":

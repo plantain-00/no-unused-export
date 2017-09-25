@@ -9,7 +9,7 @@ export type Cc = number | string;
 declare const Component: any;
 
 @Component({
-    template: `<div v-if="d2" :class="'d6'">foo{{"d7"}}bar</div>`,
+    template: `<div v-if="d2" :class="'d6'">foo{{"d7"}}bar{{d8}}</div>`,
     props: ["d1"],
 })
 export class Dd {
@@ -22,6 +22,7 @@ export class Dd {
     mounted() { }
     d6: number;
     d7: number;
+    private d8: number;
 }
 
 const angularTemplateHtml = `<div *ngIf="d2"></div>`;
