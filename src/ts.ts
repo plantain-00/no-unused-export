@@ -41,6 +41,7 @@ export function check(uniqFiles: string[]) {
     }
     const unreferencedMembersErrors: CheckError[] = [];
     const canOnlyBePublicErrors: CheckError[] = [];
+    const missingKeyErrors: CheckError[] = [];
     for (const file of uniqFiles) {
         const sourceFile = program.getSourceFile(file);
         sourceFile.forEachChild(node => {
@@ -126,6 +127,7 @@ export function check(uniqFiles: string[]) {
                                                 if (propertyName === "template") {
                                                     const text = getText(program, languageService, file, property.initializer);
                                                     checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
+                                                    checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile);
                                                 } else if (propertyName === "props") {
                                                     if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
                                                         const elements = (property.initializer as ts.ArrayLiteralExpression).elements;
@@ -146,6 +148,7 @@ export function check(uniqFiles: string[]) {
                                                             // no action
                                                         }
                                                         checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
+                                                        checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile);
                                                     }
                                                 } else if (propertyName === "host") {
                                                     if (property.initializer.kind === ts.SyntaxKind.ObjectLiteralExpression) {
@@ -180,7 +183,18 @@ export function check(uniqFiles: string[]) {
             }
         });
     }
-    return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors };
+    return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors };
+}
+
+function checkKeyExists(propertyName: string, propertyInitialize: ts.Expression, templateText: string | undefined, missingKeyErrors: CheckError[], file: string, sourceFile: ts.SourceFile) {
+    if (templateText) {
+        const fragment = parse5.parseFragment(templateText) as parse5.AST.Default.DocumentFragment;
+        const errorCount = keyExistsInNode(0, fragment);
+        if (errorCount > 0) {
+            const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, propertyInitialize.getStart(sourceFile));
+            missingKeyErrors.push({ file, name: propertyName, line, character, type: `'v-for' or '*ngFor'(error count: ${errorCount})` });
+        }
+    }
 }
 
 function checkMemberUsedInTemplate(members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
@@ -189,7 +203,7 @@ function checkMemberUsedInTemplate(members: ts.NodeArray<ts.ClassElement>, refer
         for (const member of members) {
             const identifier = member.name as ts.Identifier;
             if (identifier) {
-                const templateType = isUsedInNode(identifier.text, fragment);
+                const templateType = memberIsUsedInNode(identifier.text, fragment);
                 if (templateType) {
                     if (!referencedMembers.has(member)) {
                         referencedMembers.add(member);
@@ -212,7 +226,42 @@ const enum TemplateType {
     vue = "vue",
 }
 
-function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean | TemplateType {
+function keyExistsInNode(errorCount: number, node: parse5.AST.Default.Node): number {
+    if (node.nodeName.startsWith("#")) {
+        if (node.nodeName === "#document-fragment") {
+            for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
+                errorCount = keyExistsInNode(errorCount, childNode as parse5.AST.Default.Element);
+            }
+        }
+    } else {
+        const elementNode = node as parse5.AST.Default.Element;
+        if (elementNode.attrs) {
+            const angularAttr = elementNode.attrs.find(attr => attr.name === "*ngfor");
+            if (angularAttr) {
+                if (!angularAttr.value || !angularAttr.value.includes("trackBy")) {
+                    errorCount++;
+                }
+            }
+
+            const vueAttr = elementNode.attrs.find(attr => attr.name === "v-for");
+            if (vueAttr && elementNode.attrs.every(attr => attr.name !== "key" && attr.name !== ":key")) {
+                errorCount++;
+            }
+        }
+        if (elementNode.childNodes) {
+            for (const childNode of elementNode.childNodes) {
+                errorCount = keyExistsInNode(errorCount, childNode as parse5.AST.Default.Element);
+            }
+        }
+        const content: parse5.AST.Default.DocumentFragment = (elementNode as any).content;
+        if (content) {
+            errorCount = keyExistsInNode(errorCount, content);
+        }
+    }
+    return errorCount;
+}
+
+function memberIsUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean | TemplateType {
     if (node.nodeName.startsWith("#")) {
         if (node.nodeName === "#text") {
             const textNode = node as parse5.AST.Default.TextNode;
@@ -222,7 +271,7 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolea
                 && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value);
         } else if (node.nodeName === "#document-fragment") {
             for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
-                const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
+                const isUsed = memberIsUsedInNode(memberName, childNode as parse5.AST.Default.Element);
                 if (isUsed) {
                     return isUsed;
                 }
@@ -252,7 +301,7 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolea
         }
         if (elementNode.childNodes) {
             for (const childNode of elementNode.childNodes) {
-                const isUsed = isUsedInNode(memberName, childNode as parse5.AST.Default.Element);
+                const isUsed = memberIsUsedInNode(memberName, childNode as parse5.AST.Default.Element);
                 if (isUsed) {
                     return isUsed;
                 }
@@ -260,7 +309,7 @@ function isUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolea
         }
         const content: parse5.AST.Default.DocumentFragment = (elementNode as any).content;
         if (content) {
-            return isUsedInNode(memberName, content);
+            return memberIsUsedInNode(memberName, content);
         }
     }
     return false;

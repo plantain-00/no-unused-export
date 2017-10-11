@@ -42,6 +42,7 @@ function check(uniqFiles) {
     }
     const unreferencedMembersErrors = [];
     const canOnlyBePublicErrors = [];
+    const missingKeyErrors = [];
     for (const file of uniqFiles) {
         const sourceFile = program.getSourceFile(file);
         sourceFile.forEachChild(node => {
@@ -132,6 +133,7 @@ function check(uniqFiles) {
                                                 if (propertyName === "template") {
                                                     const text = getText(program, languageService, file, property.initializer);
                                                     checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
+                                                    checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile);
                                                 }
                                                 else if (propertyName === "props") {
                                                     if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
@@ -155,6 +157,7 @@ function check(uniqFiles) {
                                                             // no action
                                                         }
                                                         checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
+                                                        checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile);
                                                     }
                                                 }
                                                 else if (propertyName === "host") {
@@ -189,16 +192,26 @@ function check(uniqFiles) {
             }
         });
     }
-    return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors };
+    return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors };
 }
 exports.check = check;
+function checkKeyExists(propertyName, propertyInitialize, templateText, missingKeyErrors, file, sourceFile) {
+    if (templateText) {
+        const fragment = parse5.parseFragment(templateText);
+        const errorCount = keyExistsInNode(0, fragment);
+        if (errorCount > 0) {
+            const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, propertyInitialize.getStart(sourceFile));
+            missingKeyErrors.push({ file, name: propertyName, line, character, type: `'v-for' or '*ngFor'(error count: ${errorCount})` });
+        }
+    }
+}
 function checkMemberUsedInTemplate(members, referencedMembers, templateText, canOnlyBePublicErrors, file, sourceFile, classDeclaration) {
     if (templateText && members.length > 0) {
         const fragment = parse5.parseFragment(templateText);
         for (const member of members) {
             const identifier = member.name;
             if (identifier) {
-                const templateType = isUsedInNode(identifier.text, fragment);
+                const templateType = memberIsUsedInNode(identifier.text, fragment);
                 if (templateType) {
                     if (!referencedMembers.has(member)) {
                         referencedMembers.add(member);
@@ -215,7 +228,41 @@ function checkMemberUsedInTemplate(members, referencedMembers, templateText, can
         }
     }
 }
-function isUsedInNode(memberName, node) {
+function keyExistsInNode(errorCount, node) {
+    if (node.nodeName.startsWith("#")) {
+        if (node.nodeName === "#document-fragment") {
+            for (const childNode of node.childNodes) {
+                errorCount = keyExistsInNode(errorCount, childNode);
+            }
+        }
+    }
+    else {
+        const elementNode = node;
+        if (elementNode.attrs) {
+            const angularAttr = elementNode.attrs.find(attr => attr.name === "*ngfor");
+            if (angularAttr) {
+                if (!angularAttr.value || !angularAttr.value.includes("trackBy")) {
+                    errorCount++;
+                }
+            }
+            const vueAttr = elementNode.attrs.find(attr => attr.name === "v-for");
+            if (vueAttr && elementNode.attrs.every(attr => attr.name !== "key" && attr.name !== ":key")) {
+                errorCount++;
+            }
+        }
+        if (elementNode.childNodes) {
+            for (const childNode of elementNode.childNodes) {
+                errorCount = keyExistsInNode(errorCount, childNode);
+            }
+        }
+        const content = elementNode.content;
+        if (content) {
+            errorCount = keyExistsInNode(errorCount, content);
+        }
+    }
+    return errorCount;
+}
+function memberIsUsedInNode(memberName, node) {
     if (node.nodeName.startsWith("#")) {
         if (node.nodeName === "#text") {
             const textNode = node;
@@ -226,7 +273,7 @@ function isUsedInNode(memberName, node) {
         }
         else if (node.nodeName === "#document-fragment") {
             for (const childNode of node.childNodes) {
-                const isUsed = isUsedInNode(memberName, childNode);
+                const isUsed = memberIsUsedInNode(memberName, childNode);
                 if (isUsed) {
                     return isUsed;
                 }
@@ -258,7 +305,7 @@ function isUsedInNode(memberName, node) {
         }
         if (elementNode.childNodes) {
             for (const childNode of elementNode.childNodes) {
-                const isUsed = isUsedInNode(memberName, childNode);
+                const isUsed = memberIsUsedInNode(memberName, childNode);
                 if (isUsed) {
                     return isUsed;
                 }
@@ -266,7 +313,7 @@ function isUsedInNode(memberName, node) {
         }
         const content = elementNode.content;
         if (content) {
-            return isUsedInNode(memberName, content);
+            return memberIsUsedInNode(memberName, content);
         }
     }
     return false;

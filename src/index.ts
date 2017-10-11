@@ -63,7 +63,7 @@ async function executeCommandLine() {
 
     const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".ts") || file.toLowerCase().endsWith(".tsx"));
     if (tsFiles.length > 0) {
-        const { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors } = ts.check(tsFiles);
+        const { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors } = ts.check(tsFiles);
         if (unusedExportsErrors.length > 0) {
             printInConsole(`unused exported things found, please remove "export" or add "@public":`);
             for (const error of unusedExportsErrors) {
@@ -85,6 +85,13 @@ async function executeCommandLine() {
                 printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} non-public ${error.type}: ${error.name}`);
             }
             errorCount += canOnlyBePublicErrors.length;
+        }
+        if (missingKeyErrors.length > 0) {
+            printInConsole(`key is missing in the template, please add it:`);
+            for (const error of missingKeyErrors) {
+                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} missing 'key' or 'trackBy' for ${error.type}: ${error.name}`);
+            }
+            errorCount += missingKeyErrors.length;
         }
     }
 

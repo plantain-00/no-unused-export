@@ -77,3 +77,31 @@ export const gg = 4;
 console.log(gg);
 
 export const hh = 5;
+
+@Component({
+    template: `<div v-for="(child, i) in i1"></div>`,
+})
+class Ii {
+    i1: number[];
+}
+
+@Component({
+    template: `<div v-for="(child, i) in i1" key="i"></div>`,
+})
+class Jj {
+    j1: number[];
+}
+
+@Component({
+    template: `<div *ngFor="let item of k1"></div>`,
+})
+class Kk {
+    k1: number[];
+}
+
+@Component({
+    template: `<div *ngFor="let item of k1; trackBy:trackByFunction"></div>`,
+})
+class Ll {
+    l1: number[];
+}

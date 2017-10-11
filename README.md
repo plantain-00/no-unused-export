@@ -17,6 +17,8 @@ A CLI tool to check whether exported things in a module is used by other modules
 + check whether exported variable, function, type, class, interface in a module is used by other modules
 + check whether public members of class are used outside of the class
 + check whether less or scss variables are used
++ check whether template use non-public members for angular
++ check whether `key` exist for `v-for` and `trackBy` exists for `*ngFor`
 
 #### usage
 
