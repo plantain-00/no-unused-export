@@ -15,7 +15,7 @@ module.exports = {
   lint: {
     ts: `tslint ${tsFiles}`,
     js: `standard ${jsFiles}`,
-    export: `no-unused-export ${tsFiles}`
+    export: `node dist/index.js ${tsFiles}`
   },
   test: [
     'tsc -p spec',
