@@ -238,7 +238,7 @@ function keyExistsInNode(errorCount, node) {
     }
     else {
         const elementNode = node;
-        if (elementNode.attrs) {
+        if (elementNode.tagName !== "template" && elementNode.attrs) {
             const angularAttr = elementNode.attrs.find(attr => attr.name === "*ngfor");
             if (angularAttr) {
                 if (!angularAttr.value || !angularAttr.value.includes("trackBy")) {

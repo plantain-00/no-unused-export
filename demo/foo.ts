@@ -105,3 +105,9 @@ class Kk {
 class Ll {
     l1: number[];
 }
+
+@Component({
+    template: `<template v-for="(child, i) in i1"></template>`,
+})
+class Mm {
+}

@@ -235,7 +235,7 @@ function keyExistsInNode(errorCount: number, node: parse5.AST.Default.Node): num
         }
     } else {
         const elementNode = node as parse5.AST.Default.Element;
-        if (elementNode.attrs) {
+        if (elementNode.tagName !== "template" && elementNode.attrs) {
             const angularAttr = elementNode.attrs.find(attr => attr.name === "*ngfor");
             if (angularAttr) {
                 if (!angularAttr.value || !angularAttr.value.includes("trackBy")) {
