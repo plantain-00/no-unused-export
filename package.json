@@ -21,6 +21,8 @@
   },
   "homepage": "https://github.com/plantain-00/no-unused-export#readme",
   "devDependencies": {
+    "@commitlint/cli": "5.0.1",
+    "@commitlint/config-angular": "5.0.1",
     "@types/glob": "5.0.33",
     "@types/jasmine": "2.8.2",
     "@types/minimist": "1.2.0",

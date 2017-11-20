@@ -12,7 +12,8 @@ module.exports = {
   lint: {
     ts: `tslint ${tsFiles}`,
     js: `standard ${jsFiles}`,
-    export: `node dist/index.js ${tsFiles}`
+    export: `node dist/index.js ${tsFiles}`,
+    commit: `commitlint --from=HEAD~1`
   },
   test: [
     'tsc -p spec',
