@@ -7,16 +7,8 @@ import * as scss from "./scss";
 
 let suppressError = false;
 
-function printInConsole(message: any) {
-    if (message instanceof Error) {
-        message = message.message;
-    }
-    // tslint:disable-next-line:no-console
-    console.log(message);
-}
-
 function showToolVersion() {
-    printInConsole(`Version: ${packageJson.version}`);
+    console.log(`Version: ${packageJson.version}`);
 }
 
 function globAsync(pattern: string, ignore?: string | string[]) {
@@ -65,31 +57,31 @@ async function executeCommandLine() {
     if (tsFiles.length > 0) {
         const { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors } = ts.check(tsFiles);
         if (unusedExportsErrors.length > 0) {
-            printInConsole(`unused exported things found, please remove "export" or add "@public":`);
+            console.log(`unused exported things found, please remove "export" or add "@public":`);
             for (const error of unusedExportsErrors) {
-                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} unused exported ${error.type}: ${error.name}`);
+                console.log(`${error.file}:${error.line + 1}:${error.character + 1} unused exported ${error.type}: ${error.name}`);
             }
             errorCount += unusedExportsErrors.length;
 
         }
         if (unreferencedMembersErrors.length > 0) {
-            printInConsole(`unreferenced members found, please add "private" or "public":`);
+            console.log(`unreferenced members found, please add "private" or "public":`);
             for (const error of unreferencedMembersErrors) {
-                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} unreferenced ${error.type}: ${error.name}`);
+                console.log(`${error.file}:${error.line + 1}:${error.character + 1} unreferenced ${error.type}: ${error.name}`);
             }
             errorCount += unreferencedMembersErrors.length;
         }
         if (canOnlyBePublicErrors.length > 0) {
-            printInConsole(`non-public members that used in template found, will be error when it works with angular AOT, please remove the modifier:`);
+            console.log(`non-public members that used in template found, will be error when it works with angular AOT, please remove the modifier:`);
             for (const error of canOnlyBePublicErrors) {
-                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} non-public ${error.type}: ${error.name}`);
+                console.log(`${error.file}:${error.line + 1}:${error.character + 1} non-public ${error.type}: ${error.name}`);
             }
             errorCount += canOnlyBePublicErrors.length;
         }
         if (missingKeyErrors.length > 0) {
-            printInConsole(`key is missing in the template, please add it:`);
+            console.log(`key is missing in the template, please add it:`);
             for (const error of missingKeyErrors) {
-                printInConsole(`${error.file}:${error.line + 1}:${error.character + 1} missing 'key' or 'trackBy' for ${error.type}: ${error.name}`);
+                console.log(`${error.file}:${error.line + 1}:${error.character + 1} missing 'key' or 'trackBy' for ${error.type}: ${error.name}`);
             }
             errorCount += missingKeyErrors.length;
         }
@@ -99,9 +91,9 @@ async function executeCommandLine() {
     if (lessFiles.length > 0) {
         const { unusedVariables } = less.check(lessFiles);
         if (unusedVariables.length > 0) {
-            printInConsole(`unreferenced less variables found, please remove it or add "@public":`);
+            console.log(`unreferenced less variables found, please remove it or add "@public":`);
             for (const error of unusedVariables) {
-                printInConsole(`${error.file}:${error.line}:${error.character} unreferenced less ${error.type}: ${error.name}`);
+                console.log(`${error.file}:${error.line}:${error.character} unreferenced less ${error.type}: ${error.name}`);
             }
             errorCount += unusedVariables.length;
         }
@@ -111,9 +103,9 @@ async function executeCommandLine() {
     if (scssFiles.length > 0) {
         const { unusedVariables } = scss.check(scssFiles);
         if (unusedVariables.length > 0) {
-            printInConsole(`unreferenced scss variables found, please remove it or add "@public":`);
+            console.log(`unreferenced scss variables found, please remove it or add "@public":`);
             for (const error of unusedVariables) {
-                printInConsole(`${error.file}:${error.line}:${error.character} unreferenced scss ${error.type}: ${error.name}`);
+                console.log(`${error.file}:${error.line}:${error.character} unreferenced scss ${error.type}: ${error.name}`);
             }
             errorCount += unusedVariables.length;
         }
@@ -125,9 +117,13 @@ async function executeCommandLine() {
 }
 
 executeCommandLine().then(() => {
-    printInConsole("check no unused export success.");
+    console.log("check no unused export success.");
 }, error => {
-    printInConsole(error);
+    if (error instanceof Error) {
+        console.log(error.message);
+    } else {
+        console.log(error);
+    }
     if (!suppressError) {
         process.exit(1);
     }
