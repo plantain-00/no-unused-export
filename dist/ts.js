@@ -7,7 +7,9 @@ const parse5 = require("parse5");
 function check(uniqFiles) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {
-            return {};
+            return {
+                jsx: ts.JsxEmit.React,
+            };
         },
         getScriptFileNames() {
             return uniqFiles;

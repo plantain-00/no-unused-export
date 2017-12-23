@@ -6,7 +6,9 @@ import * as parse5 from "parse5";
 export function check(uniqFiles: string[]) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {
-            return {};
+            return {
+                jsx: ts.JsxEmit.React,
+            };
         },
         getScriptFileNames() {
             return uniqFiles;
