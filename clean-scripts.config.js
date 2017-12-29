@@ -13,7 +13,8 @@ module.exports = {
     ts: `tslint ${tsFiles}`,
     js: `standard ${jsFiles}`,
     export: `node dist/index.js ${tsFiles}`,
-    commit: `commitlint --from=HEAD~1`
+    commit: `commitlint --from=HEAD~1`,
+    markdown: `markdownlint README.md`
   },
   test: [
     'tsc -p spec',

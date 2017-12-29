@@ -1,3 +1,5 @@
+# no-used-export
+
 [![Dependency Status](https://david-dm.org/plantain-00/no-unused-export.svg)](https://david-dm.org/plantain-00/no-unused-export)
 [![devDependency Status](https://david-dm.org/plantain-00/no-unused-export/dev-status.svg)](https://david-dm.org/plantain-00/no-unused-export#info=devDependencies)
 [![Build Status: Linux](https://travis-ci.org/plantain-00/no-unused-export.svg?branch=master)](https://travis-ci.org/plantain-00/no-unused-export)
@@ -5,14 +7,13 @@
 [![npm version](https://badge.fury.io/js/no-unused-export.svg)](https://badge.fury.io/js/no-unused-export)
 [![Downloads](https://img.shields.io/npm/dm/no-unused-export.svg)](https://www.npmjs.com/package/no-unused-export)
 
-# no-used-export
 A CLI tool to check whether exported things in a module is used by other modules.
 
-#### install
+## install
 
 `npm i no-unused-export -g`
 
-#### features
+## features
 
 + check whether exported variable, function, type, class, interface in a module is used by other modules
 + check whether public members of class are used outside of the class
@@ -20,17 +21,17 @@ A CLI tool to check whether exported things in a module is used by other modules
 + check whether template use non-public members for angular
 + check whether `key` exist for `v-for` and `trackBy` exists for `*ngFor`
 
-#### usage
+## usage
 
 `no-unused-export "src/*.ts"`
 
-##### exclude source files
+### exclude source files
 
 `no-unused-export "src/*.ts" --exclude "src/*.d.ts"`
 
 `--exclude` is repeatable
 
-##### exclude `export`s
+### exclude `export`s
 
 ```ts
 /**
