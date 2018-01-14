@@ -11,7 +11,7 @@ A CLI tool to check whether exported things in a module is used by other modules
 
 ## install
 
-`npm i no-unused-export -g`
+`yarn global add no-unused-export`
 
 ## features
 
