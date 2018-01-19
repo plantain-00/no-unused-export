@@ -23,7 +23,7 @@ function globAsync(pattern, ignore) {
     });
 }
 async function executeCommandLine() {
-    const argv = minimist(process.argv.slice(2), { "--": true });
+    const argv = minimist(process.argv.slice(2), { '--': true });
     const showVersion = argv.v || argv.version;
     if (showVersion) {
         showToolVersion();
@@ -32,21 +32,21 @@ async function executeCommandLine() {
     suppressError = argv.suppressError;
     const inputFiles = argv._;
     if (inputFiles.length === 0) {
-        throw new Error("expect the path of source files");
+        throw new Error('expect the path of source files');
     }
     const exclude = argv.e || argv.exclude;
     let excludeFiles = [];
     if (Array.isArray(exclude)) {
         for (const e of exclude) {
-            excludeFiles = excludeFiles.concat(e.split(","));
+            excludeFiles = excludeFiles.concat(e.split(','));
         }
     }
     else if (exclude) {
-        excludeFiles = excludeFiles.concat(exclude.split(","));
+        excludeFiles = excludeFiles.concat(exclude.split(','));
     }
-    const uniqFiles = await globAsync(inputFiles.length === 1 ? inputFiles[0] : `{${inputFiles.join(",")}}`, excludeFiles);
+    const uniqFiles = await globAsync(inputFiles.length === 1 ? inputFiles[0] : `{${inputFiles.join(',')}}`, excludeFiles);
     let errorCount = 0;
-    const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".ts") || file.toLowerCase().endsWith(".tsx"));
+    const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith('.ts') || file.toLowerCase().endsWith('.tsx'));
     if (tsFiles.length > 0) {
         const { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors } = ts.check(tsFiles);
         if (unusedExportsErrors.length > 0) {
@@ -78,7 +78,7 @@ async function executeCommandLine() {
             errorCount += missingKeyErrors.length;
         }
     }
-    const lessFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".less"));
+    const lessFiles = uniqFiles.filter(file => file.toLowerCase().endsWith('.less'));
     if (lessFiles.length > 0) {
         const { unusedVariables } = less.check(lessFiles);
         if (unusedVariables.length > 0) {
@@ -89,7 +89,7 @@ async function executeCommandLine() {
             errorCount += unusedVariables.length;
         }
     }
-    const scssFiles = uniqFiles.filter(file => file.toLowerCase().endsWith(".scss"));
+    const scssFiles = uniqFiles.filter(file => file.toLowerCase().endsWith('.scss'));
     if (scssFiles.length > 0) {
         const { unusedVariables } = scss.check(scssFiles);
         if (unusedVariables.length > 0) {
@@ -101,11 +101,11 @@ async function executeCommandLine() {
         }
     }
     if (errorCount > 0) {
-        throw new Error("check no unused export fail.");
+        throw new Error('check no unused export fail.');
     }
 }
 executeCommandLine().then(() => {
-    console.log("check no unused export success.");
+    console.log('check no unused export success.');
 }, error => {
     if (error instanceof Error) {
         console.log(error.message);

@@ -31,7 +31,8 @@
     "markdownlint-cli": "0.6.0",
     "rimraf": "2.6.2",
     "standard": "10.0.3",
-    "tslint": "5.8.0"
+    "tslint": "5.8.0",
+    "tslint-config-standard": "7.0.0"
   },
   "dependencies": {
     "glob": "7.1.2",

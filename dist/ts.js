@@ -8,28 +8,28 @@ function check(uniqFiles) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {
             return {
-                jsx: ts.JsxEmit.React,
+                jsx: ts.JsxEmit.React
             };
         },
         getScriptFileNames() {
             return uniqFiles;
         },
         getScriptVersion(fileName) {
-            return "";
+            return '';
         },
         getScriptSnapshot(fileName) {
-            if (fileName === ".ts") {
-                return ts.ScriptSnapshot.fromString("");
+            if (fileName === '.ts') {
+                return ts.ScriptSnapshot.fromString('');
             }
-            return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName, { encoding: "utf8" }));
+            return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName, { encoding: 'utf8' }));
         },
-        getCurrentDirectory: () => ".",
+        getCurrentDirectory: () => '.',
         getDefaultLibFileName(options) {
             return ts.getDefaultLibFilePath(options);
         },
         fileExists: ts.sys.fileExists,
         readFile: ts.sys.readFile,
-        readDirectory: ts.sys.readDirectory,
+        readDirectory: ts.sys.readDirectory
     });
     const program = ts.createProgram(uniqFiles, { target: ts.ScriptTarget.ESNext });
     const unusedExportsErrors = [];
@@ -50,24 +50,24 @@ function check(uniqFiles) {
         sourceFile.forEachChild(node => {
             if (node.modifiers && node.modifiers.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
                 const jsDocs = getJsDocs(node);
-                const isPublic = jsDocs.find(jsDoc => jsDoc.name === "public");
+                const isPublic = jsDocs.find(jsDoc => jsDoc.name === 'public');
                 if (!isPublic) {
                     if (node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
-                        collectErrors(file, node.name, sourceFile, "type");
+                        collectErrors(file, node.name, sourceFile, 'type');
                     }
                     else if (node.kind === ts.SyntaxKind.FunctionDeclaration) {
-                        collectErrors(file, node.name, sourceFile, "function");
+                        collectErrors(file, node.name, sourceFile, 'function');
                     }
                     else if (node.kind === ts.SyntaxKind.ClassDeclaration) {
-                        collectErrors(file, node.name, sourceFile, "class");
+                        collectErrors(file, node.name, sourceFile, 'class');
                     }
                     else if (node.kind === ts.SyntaxKind.InterfaceDeclaration) {
-                        collectErrors(file, node.name, sourceFile, "interface");
+                        collectErrors(file, node.name, sourceFile, 'interface');
                     }
                     else if (node.kind === ts.SyntaxKind.VariableStatement) {
                         const declarationList = node.declarationList;
                         for (const declaration of declarationList.declarations) {
-                            collectErrors(file, declaration.name, sourceFile, "variable");
+                            collectErrors(file, declaration.name, sourceFile, 'variable');
                         }
                     }
                 }
@@ -97,7 +97,7 @@ function check(uniqFiles) {
                                 if (decorator.expression.kind === ts.SyntaxKind.CallExpression) {
                                     const { expression } = decorator.expression;
                                     const text = expression.text;
-                                    if (text === "Input" || text === "Output") {
+                                    if (text === 'Input' || text === 'Output') {
                                         referencedMembers.add(member);
                                         decoratedMembers.add(identifier.text);
                                         break;
@@ -124,7 +124,7 @@ function check(uniqFiles) {
                     for (const decorator of decorators) {
                         if (decorator.expression.kind === ts.SyntaxKind.CallExpression) {
                             const { expression, arguments: expressionArguments } = decorator.expression;
-                            if (expression.text === "Component") {
+                            if (expression.text === 'Component') {
                                 if (expressionArguments.length > 0) {
                                     const argument = expressionArguments[0];
                                     if (argument.kind === ts.SyntaxKind.ObjectLiteralExpression) {
@@ -132,12 +132,12 @@ function check(uniqFiles) {
                                         for (const property of properties) {
                                             if (property.kind === ts.SyntaxKind.PropertyAssignment) {
                                                 const propertyName = property.name.text;
-                                                if (propertyName === "template") {
+                                                if (propertyName === 'template') {
                                                     const text = getText(program, languageService, file, property.initializer);
                                                     checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration);
                                                     checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile);
                                                 }
-                                                else if (propertyName === "props") {
+                                                else if (propertyName === 'props') {
                                                     if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
                                                         const elements = property.initializer.elements;
                                                         for (const member of members) {
@@ -148,12 +148,12 @@ function check(uniqFiles) {
                                                         }
                                                     }
                                                 }
-                                                else if (propertyName === "templateUrl") {
+                                                else if (propertyName === 'templateUrl') {
                                                     const url = getText(program, languageService, file, property.initializer);
                                                     if (url) {
                                                         let text;
                                                         try {
-                                                            text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: "utf8" });
+                                                            text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' });
                                                         }
                                                         catch (error) {
                                                             // no action
@@ -162,7 +162,7 @@ function check(uniqFiles) {
                                                         checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile);
                                                     }
                                                 }
-                                                else if (propertyName === "host") {
+                                                else if (propertyName === 'host') {
                                                     if (property.initializer.kind === ts.SyntaxKind.ObjectLiteralExpression) {
                                                         const hostProperties = property.initializer.properties;
                                                         for (const hostProperty of hostProperties) {
@@ -231,8 +231,8 @@ function checkMemberUsedInTemplate(members, referencedMembers, templateText, can
     }
 }
 function keyExistsInNode(errorCount, node) {
-    if (node.nodeName.startsWith("#")) {
-        if (node.nodeName === "#document-fragment") {
+    if (node.nodeName.startsWith('#')) {
+        if (node.nodeName === '#document-fragment') {
             for (const childNode of node.childNodes) {
                 errorCount = keyExistsInNode(errorCount, childNode);
             }
@@ -240,15 +240,15 @@ function keyExistsInNode(errorCount, node) {
     }
     else {
         const elementNode = node;
-        if (elementNode.tagName !== "template" && elementNode.attrs) {
-            const angularAttr = elementNode.attrs.find(attr => attr.name === "*ngfor");
+        if (elementNode.tagName !== 'template' && elementNode.attrs) {
+            const angularAttr = elementNode.attrs.find(attr => attr.name === '*ngfor');
             if (angularAttr) {
-                if (!angularAttr.value || !angularAttr.value.includes("trackBy")) {
+                if (!angularAttr.value || !angularAttr.value.includes('trackBy')) {
                     errorCount++;
                 }
             }
-            const vueAttr = elementNode.attrs.find(attr => attr.name === "v-for");
-            if (vueAttr && elementNode.attrs.every(attr => attr.name !== "key" && attr.name !== ":key")) {
+            const vueAttr = elementNode.attrs.find(attr => attr.name === 'v-for');
+            if (vueAttr && elementNode.attrs.every(attr => attr.name !== 'key' && attr.name !== ':key')) {
                 errorCount++;
             }
         }
@@ -265,15 +265,15 @@ function keyExistsInNode(errorCount, node) {
     return errorCount;
 }
 function memberIsUsedInNode(memberName, node) {
-    if (node.nodeName.startsWith("#")) {
-        if (node.nodeName === "#text") {
+    if (node.nodeName.startsWith('#')) {
+        if (node.nodeName === '#text') {
             const textNode = node;
             return !!textNode.value
                 && textNode.value.includes(memberName)
                 && !new RegExp(`{{.*'.*${memberName}.*'.*}}`).test(textNode.value)
                 && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value);
         }
-        else if (node.nodeName === "#document-fragment") {
+        else if (node.nodeName === '#document-fragment') {
             for (const childNode of node.childNodes) {
                 const isUsed = memberIsUsedInNode(memberName, childNode);
                 if (isUsed) {
@@ -321,14 +321,14 @@ function memberIsUsedInNode(memberName, node) {
     return false;
 }
 function isVuejsAttrName(attrName) {
-    return attrName.startsWith("v-")
-        || attrName.startsWith(":")
-        || attrName.startsWith("@");
+    return attrName.startsWith('v-')
+        || attrName.startsWith(':')
+        || attrName.startsWith('@');
 }
 function isAngularAttrName(attrName) {
-    return attrName.startsWith("*ng")
-        || (attrName.startsWith("[") && attrName.endsWith("]"))
-        || (attrName.startsWith("(") && attrName.endsWith(")"));
+    return attrName.startsWith('*ng')
+        || (attrName.startsWith('[') && attrName.endsWith(']'))
+        || (attrName.startsWith('(') && attrName.endsWith(')'));
 }
 function getText(program, languageService, file, node) {
     if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
@@ -349,25 +349,25 @@ function getText(program, languageService, file, node) {
     return undefined;
 }
 const hookNames = [
-    "beforeCreate", "created",
-    "beforeMount", "mounted",
-    "beforeUpdate", "updated",
-    "activated", "deactivated",
-    "beforeDestroy", "destroyed",
-    "render",
-    "componentWillMount", "componentDidMount",
-    "componentWillReceiveProps",
-    "shouldComponentUpdate",
-    "componentWillUpdate", "componentDidUpdate",
-    "componentWillUnmount",
-    "ngOnInit",
-    "ngOnChanges",
-    "ngDoCheck",
-    "ngOnDestroy",
-    "ngAfterContentInit",
-    "ngAfterContentChecked",
-    "ngAfterViewInit",
-    "ngAfterViewChecked",
+    'beforeCreate', 'created',
+    'beforeMount', 'mounted',
+    'beforeUpdate', 'updated',
+    'activated', 'deactivated',
+    'beforeDestroy', 'destroyed',
+    'render',
+    'componentWillMount', 'componentDidMount',
+    'componentWillReceiveProps',
+    'shouldComponentUpdate',
+    'componentWillUpdate', 'componentDidUpdate',
+    'componentWillUnmount',
+    'ngOnInit',
+    'ngOnChanges',
+    'ngDoCheck',
+    'ngOnDestroy',
+    'ngAfterContentInit',
+    'ngAfterContentChecked',
+    'ngAfterViewInit',
+    'ngAfterViewChecked'
 ];
 function findNodeAtDefinition(program, definition) {
     const sourceFile = program.getSourceFile(definition.fileName);
@@ -406,7 +406,7 @@ function getJsDocs(node) {
                 for (const tag of jsDoc.tags) {
                     result.push({
                         name: tag.tagName.text,
-                        comment: tag.comment,
+                        comment: tag.comment
                     });
                 }
             }
