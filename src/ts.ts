@@ -1,7 +1,7 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as parse5 from 'parse5'
+import * as parse5 from 'parse5/lib'
 
 export function check (uniqFiles: string[]) {
   const languageService = ts.createLanguageService({

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const ts = require("typescript");
 const fs = require("fs");
 const path = require("path");
-const parse5 = require("parse5");
+const parse5 = require("parse5/lib");
 function check(uniqFiles) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {
