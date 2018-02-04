@@ -46,6 +46,9 @@ export function check (uniqFiles: string[]) {
   const missingKeyErrors: CheckError[] = []
   for (const file of uniqFiles) {
     const sourceFile = program.getSourceFile(file)
+    if (sourceFile === undefined) {
+      continue
+    }
     sourceFile.forEachChild(node => {
       if (node.modifiers && node.modifiers.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
         const jsDocs = getJsDocs(node)
