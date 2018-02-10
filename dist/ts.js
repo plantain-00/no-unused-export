@@ -1,9 +1,16 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-const ts = require("typescript");
-const fs = require("fs");
-const path = require("path");
-const parse5 = require("parse5/lib");
+const ts = __importStar(require("typescript"));
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const parse5 = __importStar(require("parse5/lib"));
 function check(uniqFiles) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {

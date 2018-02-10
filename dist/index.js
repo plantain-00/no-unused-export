@@ -1,18 +1,28 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+}
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-const minimist = require("minimist");
-const glob = require("glob");
-const packageJson = require("../package.json");
-const ts = require("./ts");
-const less = require("./less");
-const scss = require("./scss");
+const minimist_1 = __importDefault(require("minimist"));
+const glob_1 = __importDefault(require("glob"));
+const packageJson = __importStar(require("../package.json"));
+const ts = __importStar(require("./ts"));
+const less = __importStar(require("./less"));
+const scss = __importStar(require("./scss"));
 let suppressError = false;
 function showToolVersion() {
     console.log(`Version: ${packageJson.version}`);
 }
 function globAsync(pattern, ignore) {
     return new Promise((resolve, reject) => {
-        glob(pattern, { ignore }, (error, matches) => {
+        glob_1.default(pattern, { ignore }, (error, matches) => {
             if (error) {
                 reject(error);
             }
@@ -23,7 +33,7 @@ function globAsync(pattern, ignore) {
     });
 }
 async function executeCommandLine() {
-    const argv = minimist(process.argv.slice(2), { '--': true });
+    const argv = minimist_1.default(process.argv.slice(2), { '--': true });
     const showVersion = argv.v || argv.version;
     if (showVersion) {
         showToolVersion();

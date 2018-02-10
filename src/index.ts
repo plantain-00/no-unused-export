@@ -1,5 +1,5 @@
-import * as minimist from 'minimist'
-import * as glob from 'glob'
+import minimist from 'minimist'
+import glob from 'glob'
 import * as packageJson from '../package.json'
 import * as ts from './ts'
 import * as less from './less'

@@ -1,7 +1,14 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+}
 Object.defineProperty(exports, "__esModule", { value: true });
 const postcss_less_1 = require("postcss-less");
-const fs = require("fs");
+const fs = __importStar(require("fs"));
 function check(uniqFiles) {
     const variables = new Map();
     function collectVariablesFromNode(file, node, markedPublic) {
