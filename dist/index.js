@@ -1,21 +1,12 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-}
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-}
 Object.defineProperty(exports, "__esModule", { value: true });
-const minimist_1 = __importDefault(require("minimist"));
-const glob_1 = __importDefault(require("glob"));
-const packageJson = __importStar(require("../package.json"));
-const ts = __importStar(require("./ts"));
-const less = __importStar(require("./less"));
-const scss = __importStar(require("./scss"));
+const tslib_1 = require("tslib");
+const minimist_1 = tslib_1.__importDefault(require("minimist"));
+const glob_1 = tslib_1.__importDefault(require("glob"));
+const packageJson = tslib_1.__importStar(require("../package.json"));
+const ts = tslib_1.__importStar(require("./ts"));
+const less = tslib_1.__importStar(require("./less"));
+const scss = tslib_1.__importStar(require("./scss"));
 let suppressError = false;
 function showToolVersion() {
     console.log(`Version: ${packageJson.version}`);
