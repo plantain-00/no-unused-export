@@ -3,27 +3,28 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as parse5 from 'parse5/lib'
 
-export function check (uniqFiles: string[]) {
+// tslint:disable-next-line:cognitive-complexity
+export function check(uniqFiles: string[]) {
   const languageService = ts.createLanguageService({
-    getCompilationSettings () {
+    getCompilationSettings() {
       return {
         jsx: ts.JsxEmit.React
       }
     },
-    getScriptFileNames () {
+    getScriptFileNames() {
       return uniqFiles
     },
-    getScriptVersion (fileName: string) {
+    getScriptVersion(fileName: string) {
       return ''
     },
-    getScriptSnapshot (fileName: string) {
+    getScriptSnapshot(fileName: string) {
       if (fileName === '.ts') {
         return ts.ScriptSnapshot.fromString('')
       }
       return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName, { encoding: 'utf8' }))
     },
     getCurrentDirectory: () => '.',
-    getDefaultLibFileName (options: ts.CompilerOptions) {
+    getDefaultLibFileName(options: ts.CompilerOptions) {
       return ts.getDefaultLibFilePath(options)
     },
     fileExists: ts.sys.fileExists,
@@ -32,7 +33,7 @@ export function check (uniqFiles: string[]) {
   })
   const program = ts.createProgram(uniqFiles, { target: ts.ScriptTarget.ESNext })
   const unusedExportsErrors: CheckError[] = []
-  function collectErrors (file: string, identifier: ts.Identifier | undefined, sourceFile: ts.SourceFile, type: string) {
+  function collectErrors(file: string, identifier: ts.Identifier | undefined, sourceFile: ts.SourceFile, type: string) {
     if (identifier) {
       const references = languageService.getReferencesAtPosition(file, identifier.end)
       if (references && references.every(r => r.fileName === file)) {
@@ -80,9 +81,9 @@ export function check (uniqFiles: string[]) {
           if (member.kind === ts.SyntaxKind.Constructor) {
             referencedMembers.add(member)
           } else if (member.modifiers
-                        && member.modifiers.some(m => m.kind === ts.SyntaxKind.PublicKeyword
-                            || m.kind === ts.SyntaxKind.PrivateKeyword
-                            || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
+            && member.modifiers.some(m => m.kind === ts.SyntaxKind.PublicKeyword
+              || m.kind === ts.SyntaxKind.PrivateKeyword
+              || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
             referencedMembers.add(member)
           } else {
             const identifier = member.name as ts.Identifier
@@ -107,9 +108,9 @@ export function check (uniqFiles: string[]) {
             if (!referencedMembers.has(member)) {
               const references = languageService.getReferencesAtPosition(file, identifier.end)
               if (references
-                                && references.some(r => r.fileName !== file
-                                    || r.textSpan.start < node.pos
-                                    || r.textSpan.start > node.end)) {
+                && references.some(r => r.fileName !== file
+                  || r.textSpan.start < node.pos
+                  || r.textSpan.start > node.end)) {
                 referencedMembers.add(member)
               }
             }
@@ -138,7 +139,7 @@ export function check (uniqFiles: string[]) {
                             const elements = (property.initializer as ts.ArrayLiteralExpression).elements
                             for (const member of members) {
                               if (!referencedMembers.has(member)
-                                                                && elements.some(e => getText(program, languageService, file, e) === (member.name as ts.Identifier).text)) {
+                                && elements.some(e => getText(program, languageService, file, e) === (member.name as ts.Identifier).text)) {
                                 referencedMembers.add(member)
                               }
                             }
@@ -150,7 +151,7 @@ export function check (uniqFiles: string[]) {
                             try {
                               text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' })
                             } catch (error) {
-                                                            // no action
+                              // no action
                             }
                             checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
                             checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
@@ -191,7 +192,7 @@ export function check (uniqFiles: string[]) {
   return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors }
 }
 
-function checkKeyExists (propertyName: string, propertyInitialize: ts.Expression, templateText: string | undefined, missingKeyErrors: CheckError[], file: string, sourceFile: ts.SourceFile) {
+function checkKeyExists(propertyName: string, propertyInitialize: ts.Expression, templateText: string | undefined, missingKeyErrors: CheckError[], file: string, sourceFile: ts.SourceFile) {
   if (templateText) {
     const fragment = parse5.parseFragment(templateText) as parse5.AST.Default.DocumentFragment
     const errorCount = keyExistsInNode(0, fragment)
@@ -202,7 +203,8 @@ function checkKeyExists (propertyName: string, propertyInitialize: ts.Expression
   }
 }
 
-function checkMemberUsedInTemplate (members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
+// tslint:disable-next-line:cognitive-complexity
+function checkMemberUsedInTemplate(members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
   if (templateText && members.length > 0) {
     const fragment = parse5.parseFragment(templateText) as parse5.AST.Default.DocumentFragment
     for (const member of members) {
@@ -214,9 +216,9 @@ function checkMemberUsedInTemplate (members: ts.NodeArray<ts.ClassElement>, refe
             referencedMembers.add(member)
           }
           if (templateType !== TemplateType.vue
-                        && member.modifiers
-                        && member.modifiers.some(m => m.kind === ts.SyntaxKind.PrivateKeyword
-                            || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
+            && member.modifiers
+            && member.modifiers.some(m => m.kind === ts.SyntaxKind.PrivateKeyword
+              || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
             const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.getStart(sourceFile))
             canOnlyBePublicErrors.push({ file, name: identifier.text, line, character, type: `class ${classDeclaration.name!.text} member` })
           }
@@ -227,11 +229,12 @@ function checkMemberUsedInTemplate (members: ts.NodeArray<ts.ClassElement>, refe
 }
 
 const enum TemplateType {
-    angular = 'angular',
-    vue = 'vue'
+  angular = 'angular',
+  vue = 'vue'
 }
 
-function keyExistsInNode (errorCount: number, node: parse5.AST.Default.Node): number {
+// tslint:disable-next-line:cognitive-complexity
+function keyExistsInNode(errorCount: number, node: parse5.AST.Default.Node): number {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#document-fragment') {
       for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
@@ -266,14 +269,15 @@ function keyExistsInNode (errorCount: number, node: parse5.AST.Default.Node): nu
   return errorCount
 }
 
-function memberIsUsedInNode (memberName: string, node: parse5.AST.Default.Node): boolean | TemplateType {
+// tslint:disable-next-line:cognitive-complexity
+function memberIsUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean | TemplateType {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#text') {
       const textNode = node as parse5.AST.Default.TextNode
       return !!textNode.value
-                && textNode.value.includes(memberName)
-                && !new RegExp(`{{.*'.*${memberName}.*'.*}}`).test(textNode.value)
-                && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value)
+        && textNode.value.includes(memberName)
+        && !new RegExp(`{{.*'.*${memberName}.*'.*}}`).test(textNode.value)
+        && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value)
     } else if (node.nodeName === '#document-fragment') {
       for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
         const isUsed = memberIsUsedInNode(memberName, childNode as parse5.AST.Default.Element)
@@ -295,9 +299,9 @@ function memberIsUsedInNode (memberName: string, node: parse5.AST.Default.Node):
         }
         if (templateType) {
           const isUsed = attr.value
-                        && attr.value.includes(memberName)
-                        && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
-                        && !new RegExp(`".*${memberName}.*"`).test(attr.value)
+            && attr.value.includes(memberName)
+            && !new RegExp(`'.*${memberName}.*'`).test(attr.value)
+            && !new RegExp(`".*${memberName}.*"`).test(attr.value)
           if (isUsed) {
             return templateType
           }
@@ -320,21 +324,21 @@ function memberIsUsedInNode (memberName: string, node: parse5.AST.Default.Node):
   return false
 }
 
-function isVuejsAttrName (attrName: string) {
+function isVuejsAttrName(attrName: string) {
   return attrName.startsWith('v-')
-        || attrName.startsWith(':')
-        || attrName.startsWith('@')
+    || attrName.startsWith(':')
+    || attrName.startsWith('@')
 }
 
-function isAngularAttrName (attrName: string) {
+function isAngularAttrName(attrName: string) {
   return attrName.startsWith('*ng')
-        || (attrName.startsWith('[') && attrName.endsWith(']'))
-        || (attrName.startsWith('(') && attrName.endsWith(')'))
+    || (attrName.startsWith('[') && attrName.endsWith(']'))
+    || (attrName.startsWith('(') && attrName.endsWith(')'))
 }
 
-function getText (program: ts.Program, languageService: ts.LanguageService, file: string, node: ts.Node): string | undefined {
+function getText(program: ts.Program, languageService: ts.LanguageService, file: string, node: ts.Node): string | undefined {
   if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-        || node.kind === ts.SyntaxKind.StringLiteral) {
+    || node.kind === ts.SyntaxKind.StringLiteral) {
     return (node as ts.NoSubstitutionTemplateLiteral | ts.StringLiteral).text
   } else if (node.kind === ts.SyntaxKind.Identifier) {
     const identifier = node as ts.Identifier
@@ -374,7 +378,7 @@ const hookNames = [
   'ngAfterViewChecked'
 ]
 
-function findNodeAtDefinition (program: ts.Program, definition: ts.DefinitionInfo) {
+function findNodeAtDefinition(program: ts.Program, definition: ts.DefinitionInfo) {
   const sourceFile = program.getSourceFile(definition.fileName)
   if (sourceFile) {
     return sourceFile.forEachChild(child => {
@@ -387,14 +391,14 @@ function findNodeAtDefinition (program: ts.Program, definition: ts.DefinitionInf
   return undefined
 }
 
-function getVariableValue (child: ts.Node, variableName: string, program: ts.Program, languageService: ts.LanguageService, file: string) {
+function getVariableValue(child: ts.Node, variableName: string, program: ts.Program, languageService: ts.LanguageService, file: string) {
   const declarations = (child as ts.VariableStatement).declarationList.declarations
   for (const declaration of declarations) {
     if (declaration.kind === ts.SyntaxKind.VariableDeclaration) {
-      const name = (declaration as ts.VariableDeclaration).name
+      const name = declaration.name
       if (name.kind === ts.SyntaxKind.Identifier
-                && (name as ts.Identifier).text === variableName) {
-        const initializer = (declaration as ts.VariableDeclaration).initializer
+        && name.text === variableName) {
+        const initializer = declaration.initializer
         if (initializer) {
           return getText(program, languageService, file, initializer)
         }
@@ -404,7 +408,7 @@ function getVariableValue (child: ts.Node, variableName: string, program: ts.Pro
   return undefined
 }
 
-function getJsDocs (node: ts.Node) {
+function getJsDocs(node: ts.Node) {
   const jsDocs: ts.JSDoc[] | undefined = (node as any).jsDoc
   const result: JsDoc[] = []
   if (jsDocs && jsDocs.length > 0) {

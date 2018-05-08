@@ -23,6 +23,7 @@ function globAsync(pattern, ignore) {
         });
     });
 }
+// tslint:disable-next-line:cognitive-complexity
 async function executeCommandLine() {
     const argv = minimist_1.default(process.argv.slice(2), { '--': true });
     const showVersion = argv.v || argv.version;

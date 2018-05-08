@@ -41,6 +41,7 @@ function check(uniqFiles) {
             markedPublic = collectVariablesFromNode(fileName, node, markedPublic);
         }
     }
+    // tslint:disable-next-line:cognitive-complexity
     function checkVariablesIsUsedForNode(node) {
         if (variables.size > 0) {
             if (node.type === 'decl') {

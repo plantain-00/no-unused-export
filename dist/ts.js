@@ -5,6 +5,7 @@ const ts = tslib_1.__importStar(require("typescript"));
 const fs = tslib_1.__importStar(require("fs"));
 const path = tslib_1.__importStar(require("path"));
 const parse5 = tslib_1.__importStar(require("parse5/lib"));
+// tslint:disable-next-line:cognitive-complexity
 function check(uniqFiles) {
     const languageService = ts.createLanguageService({
         getCompilationSettings() {
@@ -211,6 +212,7 @@ function checkKeyExists(propertyName, propertyInitialize, templateText, missingK
         }
     }
 }
+// tslint:disable-next-line:cognitive-complexity
 function checkMemberUsedInTemplate(members, referencedMembers, templateText, canOnlyBePublicErrors, file, sourceFile, classDeclaration) {
     if (templateText && members.length > 0) {
         const fragment = parse5.parseFragment(templateText);
@@ -234,6 +236,7 @@ function checkMemberUsedInTemplate(members, referencedMembers, templateText, can
         }
     }
 }
+// tslint:disable-next-line:cognitive-complexity
 function keyExistsInNode(errorCount, node) {
     if (node.nodeName.startsWith('#')) {
         if (node.nodeName === '#document-fragment') {
@@ -268,6 +271,7 @@ function keyExistsInNode(errorCount, node) {
     }
     return errorCount;
 }
+// tslint:disable-next-line:cognitive-complexity
 function memberIsUsedInNode(memberName, node) {
     if (node.nodeName.startsWith('#')) {
         if (node.nodeName === '#text') {

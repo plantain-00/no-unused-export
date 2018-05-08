@@ -1,9 +1,9 @@
 import { parse, Node } from 'postcss-scss'
 import * as fs from 'fs'
 
-export function check (uniqFiles: string[]) {
+export function check(uniqFiles: string[]) {
   const variables = new Map<string, CheckError>()
-  function collectVariablesFromNode (file: string, node: Node, markedPublic: boolean): boolean {
+  function collectVariablesFromNode(file: string, node: Node, markedPublic: boolean): boolean {
     if (node.type === 'decl') {
       if (!markedPublic && node.prop.startsWith('$') && !variables.has(node.prop)) {
         const variableName = node.prop.substring(1)
@@ -39,13 +39,14 @@ export function check (uniqFiles: string[]) {
     }
   }
 
-  function checkVariablesIsUsedForNode (node: Node) {
+  // tslint:disable-next-line:cognitive-complexity
+  function checkVariablesIsUsedForNode(node: Node) {
     if (variables.size > 0) {
       if (node.type === 'decl') {
         const referencedVariableNames = new Set<string>()
         for (const [variableName] of variables) {
           if (!referencedVariableNames.has(variableName)
-                        && node.value.includes(`$${variableName}`)) {
+            && node.value.includes(`$${variableName}`)) {
             referencedVariableNames.add(variableName)
           }
         }
