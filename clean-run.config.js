@@ -2,6 +2,7 @@ module.exports = {
   include: [
     'bin/*',
     'dist/*.js',
+    'demo/*',
     'package.json',
     'yarn.lock'
   ],
@@ -9,6 +10,6 @@ module.exports = {
   ],
   postScript: [
     'cd "[dir]" && yarn --production',
-    '[dir]/bin/no-unused-export demo/*.ts demo/*.less demo/*.scss --suppressError'
+    'node [dir]/dist/index.js demo/*.ts demo/*.less demo/*.scss --suppressError'
   ]
 }
