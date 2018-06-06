@@ -71,7 +71,7 @@ function check(uniqFiles) {
         }
     }
     const unusedVariables = [];
-    for (const [_, checkError] of variables) {
+    for (const checkError of variables.values()) {
         unusedVariables.push(checkError);
     }
     return { unusedVariables };

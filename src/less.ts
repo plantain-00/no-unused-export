@@ -71,7 +71,7 @@ export function check(uniqFiles: string[]) {
   }
 
   const unusedVariables: CheckError[] = []
-  for (const [_, checkError] of variables) {
+  for (const checkError of variables.values()) {
     unusedVariables.push(checkError)
   }
 

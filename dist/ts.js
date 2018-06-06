@@ -4,7 +4,7 @@ const tslib_1 = require("tslib");
 const ts = tslib_1.__importStar(require("typescript"));
 const fs = tslib_1.__importStar(require("fs"));
 const path = tslib_1.__importStar(require("path"));
-const parse5 = tslib_1.__importStar(require("parse5/lib"));
+const parse5 = tslib_1.__importStar(require("parse5"));
 // tslint:disable-next-line:cognitive-complexity
 function check(uniqFiles) {
     const languageService = ts.createLanguageService({

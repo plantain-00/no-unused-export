@@ -1,7 +1,7 @@
 import * as ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as parse5 from 'parse5/lib'
+import * as parse5 from 'parse5'
 
 // tslint:disable-next-line:cognitive-complexity
 export function check(uniqFiles: string[]) {
@@ -194,7 +194,7 @@ export function check(uniqFiles: string[]) {
 
 function checkKeyExists(propertyName: string, propertyInitialize: ts.Expression, templateText: string | undefined, missingKeyErrors: CheckError[], file: string, sourceFile: ts.SourceFile) {
   if (templateText) {
-    const fragment = parse5.parseFragment(templateText) as parse5.AST.Default.DocumentFragment
+    const fragment = parse5.parseFragment(templateText) as parse5.DefaultTreeDocumentFragment
     const errorCount = keyExistsInNode(0, fragment)
     if (errorCount > 0) {
       const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, propertyInitialize.getStart(sourceFile))
@@ -206,7 +206,7 @@ function checkKeyExists(propertyName: string, propertyInitialize: ts.Expression,
 // tslint:disable-next-line:cognitive-complexity
 function checkMemberUsedInTemplate(members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
   if (templateText && members.length > 0) {
-    const fragment = parse5.parseFragment(templateText) as parse5.AST.Default.DocumentFragment
+    const fragment = parse5.parseFragment(templateText) as parse5.DefaultTreeDocumentFragment
     for (const member of members) {
       const identifier = member.name as ts.Identifier
       if (identifier) {
@@ -234,15 +234,15 @@ const enum TemplateType {
 }
 
 // tslint:disable-next-line:cognitive-complexity
-function keyExistsInNode(errorCount: number, node: parse5.AST.Default.Node): number {
+function keyExistsInNode(errorCount: number, node: parse5.DefaultTreeNode): number {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#document-fragment') {
-      for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
-        errorCount = keyExistsInNode(errorCount, childNode as parse5.AST.Default.Element)
+      for (const childNode of (node as parse5.DefaultTreeDocumentFragment).childNodes) {
+        errorCount = keyExistsInNode(errorCount, childNode as parse5.DefaultTreeElement)
       }
     }
   } else {
-    const elementNode = node as parse5.AST.Default.Element
+    const elementNode = node as parse5.DefaultTreeElement
     if (elementNode.tagName !== 'template' && elementNode.attrs) {
       const angularAttr = elementNode.attrs.find(attr => attr.name === '*ngfor')
       if (angularAttr) {
@@ -258,10 +258,10 @@ function keyExistsInNode(errorCount: number, node: parse5.AST.Default.Node): num
     }
     if (elementNode.childNodes) {
       for (const childNode of elementNode.childNodes) {
-        errorCount = keyExistsInNode(errorCount, childNode as parse5.AST.Default.Element)
+        errorCount = keyExistsInNode(errorCount, childNode as parse5.DefaultTreeElement)
       }
     }
-    const content: parse5.AST.Default.DocumentFragment = (elementNode as any).content
+    const content: parse5.DefaultTreeDocumentFragment = (elementNode as any).content
     if (content) {
       errorCount = keyExistsInNode(errorCount, content)
     }
@@ -270,17 +270,17 @@ function keyExistsInNode(errorCount: number, node: parse5.AST.Default.Node): num
 }
 
 // tslint:disable-next-line:cognitive-complexity
-function memberIsUsedInNode(memberName: string, node: parse5.AST.Default.Node): boolean | TemplateType {
+function memberIsUsedInNode(memberName: string, node: parse5.DefaultTreeNode): boolean | TemplateType {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#text') {
-      const textNode = node as parse5.AST.Default.TextNode
+      const textNode = node as parse5.DefaultTreeTextNode
       return !!textNode.value
         && textNode.value.includes(memberName)
         && !new RegExp(`{{.*'.*${memberName}.*'.*}}`).test(textNode.value)
         && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value)
     } else if (node.nodeName === '#document-fragment') {
-      for (const childNode of (node as parse5.AST.Default.DocumentFragment).childNodes) {
-        const isUsed = memberIsUsedInNode(memberName, childNode as parse5.AST.Default.Element)
+      for (const childNode of (node as parse5.DefaultTreeDocumentFragment).childNodes) {
+        const isUsed = memberIsUsedInNode(memberName, childNode as parse5.DefaultTreeElement)
         if (isUsed) {
           return isUsed
         }
@@ -288,7 +288,7 @@ function memberIsUsedInNode(memberName: string, node: parse5.AST.Default.Node): 
       return false
     }
   } else {
-    const elementNode = node as parse5.AST.Default.Element
+    const elementNode = node as parse5.DefaultTreeElement
     if (elementNode.attrs) {
       for (const attr of elementNode.attrs) {
         let templateType: TemplateType | undefined
@@ -310,13 +310,13 @@ function memberIsUsedInNode(memberName: string, node: parse5.AST.Default.Node): 
     }
     if (elementNode.childNodes) {
       for (const childNode of elementNode.childNodes) {
-        const isUsed = memberIsUsedInNode(memberName, childNode as parse5.AST.Default.Element)
+        const isUsed = memberIsUsedInNode(memberName, childNode as parse5.DefaultTreeElement)
         if (isUsed) {
           return isUsed
         }
       }
     }
-    const content: parse5.AST.Default.DocumentFragment = (elementNode as any).content
+    const content: parse5.DefaultTreeDocumentFragment = (elementNode as any).content
     if (content) {
       return memberIsUsedInNode(memberName, content)
     }
