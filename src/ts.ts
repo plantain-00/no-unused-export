@@ -122,51 +122,47 @@ export function check(uniqFiles: string[]) {
           for (const decorator of decorators) {
             if (decorator.expression.kind === ts.SyntaxKind.CallExpression) {
               const { expression, arguments: expressionArguments } = decorator.expression as ts.CallExpression
-              if ((expression as ts.Identifier).text === 'Component') {
-                if (expressionArguments.length > 0) {
-                  const argument = expressionArguments[0]
-                  if (argument.kind === ts.SyntaxKind.ObjectLiteralExpression) {
-                    const properties = (argument as ts.ObjectLiteralExpression).properties
-                    for (const property of properties) {
-                      if (property.kind === ts.SyntaxKind.PropertyAssignment) {
-                        const propertyName = (property.name as ts.Identifier).text
-                        if (propertyName === 'template') {
-                          const text = getText(program, languageService, file, property.initializer)
+              if ((expression as ts.Identifier).text === 'Component' && expressionArguments.length > 0) {
+                const argument = expressionArguments[0]
+                if (argument.kind === ts.SyntaxKind.ObjectLiteralExpression) {
+                  const properties = (argument as ts.ObjectLiteralExpression).properties
+                  for (const property of properties) {
+                    if (property.kind === ts.SyntaxKind.PropertyAssignment) {
+                      const propertyName = (property.name as ts.Identifier).text
+                      if (propertyName === 'template') {
+                        const text = getText(program, languageService, file, property.initializer)
+                        checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
+                        checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
+                      } else if (propertyName === 'props') {
+                        if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
+                          const elements = (property.initializer as ts.ArrayLiteralExpression).elements
+                          for (const member of members) {
+                            if (!referencedMembers.has(member)
+                              && elements.some(e => getText(program, languageService, file, e) === (member.name as ts.Identifier).text)) {
+                              referencedMembers.add(member)
+                            }
+                          }
+                        }
+                      } else if (propertyName === 'templateUrl') {
+                        const url = getText(program, languageService, file, property.initializer)
+                        if (url) {
+                          let text: string | undefined
+                          try {
+                            text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' })
+                          } catch (error) {
+                            // no action
+                          }
                           checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
                           checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
-                        } else if (propertyName === 'props') {
-                          if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
-                            const elements = (property.initializer as ts.ArrayLiteralExpression).elements
-                            for (const member of members) {
-                              if (!referencedMembers.has(member)
-                                && elements.some(e => getText(program, languageService, file, e) === (member.name as ts.Identifier).text)) {
-                                referencedMembers.add(member)
-                              }
-                            }
-                          }
-                        } else if (propertyName === 'templateUrl') {
-                          const url = getText(program, languageService, file, property.initializer)
-                          if (url) {
-                            let text: string | undefined
-                            try {
-                              text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' })
-                            } catch (error) {
-                              // no action
-                            }
-                            checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
-                            checkKeyExists(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
-                          }
-                        } else if (propertyName === 'host') {
-                          if (property.initializer.kind === ts.SyntaxKind.ObjectLiteralExpression) {
-                            const hostProperties = (property.initializer as ts.ObjectLiteralExpression).properties
-                            for (const hostProperty of hostProperties) {
-                              if (hostProperty.kind === ts.SyntaxKind.PropertyAssignment) {
-                                const key = getText(program, languageService, file, hostProperty.name)
-                                if (key && isAngularAttrName(key)) {
-                                  const text = getText(program, languageService, file, hostProperty.initializer)
-                                  checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
-                                }
-                              }
+                        }
+                      } else if (propertyName === 'host' && property.initializer.kind === ts.SyntaxKind.ObjectLiteralExpression) {
+                        const hostProperties = (property.initializer as ts.ObjectLiteralExpression).properties
+                        for (const hostProperty of hostProperties) {
+                          if (hostProperty.kind === ts.SyntaxKind.PropertyAssignment) {
+                            const key = getText(program, languageService, file, hostProperty.name)
+                            if (key && isAngularAttrName(key)) {
+                              const text = getText(program, languageService, file, hostProperty.initializer)
+                              checkMemberUsedInTemplate(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
                             }
                           }
                         }
@@ -245,10 +241,8 @@ function keyExistsInNode(errorCount: number, node: parse5.DefaultTreeNode): numb
     const elementNode = node as parse5.DefaultTreeElement
     if (elementNode.tagName !== 'template' && elementNode.attrs) {
       const angularAttr = elementNode.attrs.find(attr => attr.name === '*ngfor')
-      if (angularAttr) {
-        if (!angularAttr.value || !angularAttr.value.includes('trackBy')) {
-          errorCount++
-        }
+      if (angularAttr && (!angularAttr.value || !angularAttr.value.includes('trackBy'))) {
+        errorCount++
       }
 
       const vueAttr = elementNode.attrs.find(attr => attr.name === 'v-for')
@@ -428,5 +422,5 @@ function getJsDocs(node: ts.Node) {
 
 type JsDoc = {
   name: string;
-  comment: string | undefined;
+  comment?: string;
 }

@@ -21,10 +21,8 @@ export function check(uniqFiles: string[]) {
           markedPublic = collectVariablesFromNode(file, childNode, markedPublic)
         }
       }
-    } else if (node.type === 'comment') {
-      if (node.text === '@public') {
-        return true
-      }
+    } else if (node.type === 'comment' && node.text === '@public') {
+      return true
     }
     return false
   }
@@ -53,11 +51,9 @@ export function check(uniqFiles: string[]) {
         for (const variableName of referencedVariableNames) {
           variables.delete(variableName)
         }
-      } else if (node.type === 'rule') {
-        if (node.nodes) {
-          for (const childNode of node.nodes) {
-            checkVariablesIsUsedForNode(childNode)
-          }
+      } else if (node.type === 'rule' && node.nodes) {
+        for (const childNode of node.nodes) {
+          checkVariablesIsUsedForNode(childNode)
         }
       }
     }
