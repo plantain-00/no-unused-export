@@ -17,8 +17,6 @@ demo/foo.ts:25:13 non-public class Dd member: d8
 key is missing in the template, please add it:
 demo/foo.ts:82:15 missing 'key' or 'trackBy' for 'v-for' or '*ngFor'(error count: 1): template
 demo/foo.ts:96:15 missing 'key' or 'trackBy' for 'v-for' or '*ngFor'(error count: 1): template
-unreferenced less variables found, please remove it or add "@public":
-demo/variable.less:4:1 unreferenced less variable: variable3
 unreferenced scss variables found, please remove it or add "@public":
 demo/variable.scss:4:1 unreferenced scss variable: variable3
 check no unused export fail.
