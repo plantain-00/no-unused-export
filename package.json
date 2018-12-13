@@ -47,8 +47,8 @@
     "parse5": "5.1.0",
     "postcss-less": "3.1.0",
     "postcss-scss": "2.0.0",
-    "tslib": "1.9.3",
-    "typescript": "3.2.1"
+    "tslib": "1",
+    "typescript": "3"
   },
   "bin": {
     "no-unused-export": "bin/no-unused-export"
