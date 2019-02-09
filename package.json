@@ -28,7 +28,7 @@
     "@types/glob": "7.1.1",
     "@types/jasmine": "3.3.8",
     "@types/minimist": "1.2.0",
-    "@types/node": "10.12.21",
+    "@types/node": "10.12.24",
     "@types/parse5": "5.0.0",
     "clean-release": "2.7.0",
     "clean-scripts": "1.9.2",
