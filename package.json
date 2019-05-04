@@ -28,10 +28,10 @@
     "@types/glob": "7.1.1",
     "@types/jasmine": "3.3.12",
     "@types/minimist": "1.2.0",
-    "@types/node": "11.13.8",
+    "@types/node": "12.0.0",
     "@types/parse5": "5.0.0",
     "clean-release": "2.7.0",
-    "clean-scripts": "1.9.2",
+    "clean-scripts": "1.11.0",
     "jasmine": "3.4.0",
     "markdownlint-cli": "0.15.0",
     "rimraf": "2.6.3",
@@ -39,7 +39,7 @@
     "tslint": "5.16.0",
     "tslint-config-standard": "8.0.1",
     "tslint-sonarts": "1.9.0",
-    "type-coverage": "1.13.0"
+    "type-coverage": "2.0.1"
   },
   "dependencies": {
     "glob": "7.1.3",
