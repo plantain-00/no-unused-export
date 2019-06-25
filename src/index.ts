@@ -25,7 +25,14 @@ function globAsync(pattern: string, ignore?: string | string[]) {
 
 // tslint:disable-next-line:cognitive-complexity
 async function executeCommandLine() {
-  const argv = minimist(process.argv.slice(2), { '--': true })
+  const argv = minimist(process.argv.slice(2), { '--': true }) as unknown as {
+    v: boolean
+    version: boolean
+    suppressError: boolean
+    _: string[]
+    e: string | string[]
+    exclude: string | string[]
+  }
 
   const showVersion = argv.v || argv.version
   if (showVersion) {
@@ -119,7 +126,7 @@ async function executeCommandLine() {
 
 executeCommandLine().then(() => {
   console.log('check no unused export success.')
-}, error => {
+}, (error: Error) => {
   if (error instanceof Error) {
     console.log(error.message)
   } else {

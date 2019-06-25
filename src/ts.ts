@@ -255,7 +255,7 @@ function keyExistsInNode(errorCount: number, node: parse5.DefaultTreeNode): numb
         errorCount = keyExistsInNode(errorCount, childNode as parse5.DefaultTreeElement)
       }
     }
-    const content: parse5.DefaultTreeDocumentFragment = (elementNode as any).content
+    const content = (elementNode as unknown as { content?: parse5.DefaultTreeDocumentFragment }).content
     if (content) {
       errorCount = keyExistsInNode(errorCount, content)
     }
@@ -310,7 +310,7 @@ function memberIsUsedInNode(memberName: string, node: parse5.DefaultTreeNode): b
         }
       }
     }
-    const content: parse5.DefaultTreeDocumentFragment = (elementNode as any).content
+    const content = (elementNode as unknown as { content?: parse5.DefaultTreeDocumentFragment }).content
     if (content) {
       return memberIsUsedInNode(memberName, content)
     }
@@ -403,7 +403,7 @@ function getVariableValue(child: ts.Node, variableName: string, program: ts.Prog
 }
 
 function getJsDocs(node: ts.Node) {
-  const jsDocs: ts.JSDoc[] | undefined = (node as any).jsDoc
+  const jsDocs = (node as unknown as { jsDoc?: ts.JSDoc[] }).jsDoc
   const result: JsDoc[] = []
   if (jsDocs && jsDocs.length > 0) {
     for (const jsDoc of jsDocs) {

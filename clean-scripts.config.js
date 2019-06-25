@@ -15,7 +15,7 @@ module.exports = {
     export: `node dist/index.js ${tsFiles}`,
     commit: `commitlint --from=HEAD~1`,
     markdown: `markdownlint README.md`,
-    typeCoverage: 'type-coverage -p src --strict'
+    typeCoverage: 'type-coverage -p src --strict --ignore-catch'
   },
   test: [
     'tsc -p spec',

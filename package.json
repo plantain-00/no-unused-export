@@ -19,7 +19,7 @@
     "url": "https://github.com/plantain-00/no-unused-export/issues"
   },
   "typeCoverage": {
-    "atLeast": 99
+    "atLeast": 100
   },
   "homepage": "https://github.com/plantain-00/no-unused-export#readme",
   "devDependencies": {
