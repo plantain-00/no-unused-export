@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "typescript": "3",
+    "tslib": "1"
+  }
+}

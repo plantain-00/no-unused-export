@@ -32,6 +32,7 @@ async function executeCommandLine() {
     _: string[]
     e: string | string[]
     exclude: string | string[]
+    strict: boolean
   }
 
   const showVersion = argv.v || argv.version
@@ -63,7 +64,14 @@ async function executeCommandLine() {
 
   const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith('.ts') || file.toLowerCase().endsWith('.tsx'))
   if (tsFiles.length > 0) {
-    const { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors } = ts.check(tsFiles)
+    const {
+      unusedExportsErrors,
+      unreferencedMembersErrors,
+      canOnlyBePublicErrors,
+      missingKeyErrors,
+      missingDependencyErrors,
+      unusedDependencyErrors
+    } = ts.check(tsFiles)
     if (unusedExportsErrors.length > 0) {
       console.log(`unused exported things found, please remove "export" or add "@public":`)
       for (const error of unusedExportsErrors) {
@@ -92,6 +100,22 @@ async function executeCommandLine() {
         console.log(`${error.file}:${error.line + 1}:${error.character + 1} missing 'key' or 'trackBy' for ${error.type}: ${error.name}`)
       }
       errorCount += missingKeyErrors.length
+    }
+    if (argv.strict) {
+      if (missingDependencyErrors.length > 0) {
+        console.log(`dependency is missing in package.json, please add it:`)
+        for (const error of missingDependencyErrors) {
+          console.log(`${error.file}:${error.line + 1}:${error.character + 1} missing dependency for ${error.type}: ${error.name}`)
+        }
+        errorCount += missingDependencyErrors.length
+      }
+      if (unusedDependencyErrors.length > 0) {
+        console.log(`dependency is unused in package.json, please remove it:`)
+        for (const error of unusedDependencyErrors) {
+          console.log(`${error.file}:${error.line + 1}:${error.character + 1} unused dependency for ${error.type}: ${error.name}`)
+        }
+        errorCount += unusedDependencyErrors.length
+      }
     }
   }
 

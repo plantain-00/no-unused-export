@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as parse5 from 'parse5'
 
-// tslint:disable-next-line:cognitive-complexity
+// tslint:disable-next-line:cognitive-complexity no-big-function
 export function check(uniqFiles: string[]) {
   const languageService = ts.createLanguageService({
     getCompilationSettings() {
@@ -45,6 +45,9 @@ export function check(uniqFiles: string[]) {
   const unreferencedMembersErrors: CheckError[] = []
   const canOnlyBePublicErrors: CheckError[] = []
   const missingKeyErrors: CheckError[] = []
+  const missingDependencyErrors: CheckError[] = []
+  const unusedDependencyErrors: CheckError[] = []
+  const packageJsonMap = new Map<string, { name: string, imported: boolean }[]>()
   for (const file of uniqFiles) {
     const sourceFile = program.getSourceFile(file)
     if (sourceFile === undefined) {
@@ -183,9 +186,95 @@ export function check(uniqFiles: string[]) {
           }
         }
       }
+
+      if (node.kind === ts.SyntaxKind.ImportDeclaration) {
+        const importDeclaration = node as ts.ImportDeclaration
+        if (importDeclaration.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral) {
+          checkImport(importDeclaration.moduleSpecifier as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile)
+        }
+      } else if (node.kind === ts.SyntaxKind.ImportEqualsDeclaration) {
+        const importDeclaration = node as ts.ImportEqualsDeclaration
+        if (importDeclaration.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference) {
+          const expression = (importDeclaration.moduleReference as ts.ExternalModuleReference).expression
+          if (expression.kind === ts.SyntaxKind.StringLiteral) {
+            checkImport(expression as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile)
+          }
+        }
+      }
     })
   }
-  return { unusedExportsErrors, unreferencedMembersErrors, canOnlyBePublicErrors, missingKeyErrors }
+  for (const [file, values] of packageJsonMap) {
+    for (const value of values) {
+      if (!value.imported) {
+        unusedDependencyErrors.push({ file, name: value.name, line: 0, character: 0, type: `'package.json'` })
+      }
+    }
+  }
+  return {
+    unusedExportsErrors,
+    unreferencedMembersErrors,
+    canOnlyBePublicErrors,
+    missingKeyErrors,
+    missingDependencyErrors,
+    unusedDependencyErrors
+  }
+}
+
+function checkImport(
+  stringLiteral: ts.StringLiteral,
+  languageService: ts.LanguageService,
+  file: string,
+  packageJsonMap: Map<string, { name: string, imported: boolean }[]>,
+  missingDependencyErrors: CheckError[],
+  sourceFile: ts.SourceFile
+) {
+  const definitions = languageService.getDefinitionAtPosition(file, stringLiteral.end)
+  if (definitions && definitions.length > 0) {
+    const definition = definitions[0]
+    if (definition.fileName.includes('node_modules') && !definition.fileName.includes(nodePath)) {
+      const packageJson = getPackageJson(file, packageJsonMap)
+      const dependency = packageJson.find(p => p.name === stringLiteral.text)
+      if (dependency) {
+        dependency.imported = true
+      } else {
+        const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, stringLiteral.getStart(sourceFile))
+        missingDependencyErrors.push({ file, name: stringLiteral.text, line, character, type: `'import'` })
+      }
+    }
+  }
+}
+
+const nodePath = path.join('node_modules', '@types', 'node')
+
+function getPackageJson(file: string, map: Map<string, { name: string, imported: boolean }[]>): { name: string, imported: boolean }[] {
+  const dirname = path.dirname(file)
+  const packageJsonPath = path.resolve(dirname, 'package.json')
+  let dependencies = map.get(packageJsonPath)
+  if (dependencies) {
+    return dependencies
+  }
+  let packageJson: { dependencies: unknown, peerDependencies: unknown } | undefined
+  try {
+    packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: 'utf8' }))
+  } catch (error) {
+    // no action
+  }
+  if (packageJson) {
+    dependencies = []
+    if (typeof packageJson.dependencies === 'object' && packageJson.dependencies) {
+      dependencies.push(...Object.keys(packageJson.dependencies).map(d => ({ name: d, imported: false })))
+    }
+    if (typeof packageJson.peerDependencies === 'object' && packageJson.peerDependencies) {
+      dependencies.push(...Object.keys(packageJson.peerDependencies).map(d => ({ name: d, imported: false })))
+    }
+    map.set(packageJsonPath, dependencies)
+    return dependencies
+  }
+  if (dirname === '.') {
+    map.set(packageJsonPath, [])
+    return []
+  }
+  return getPackageJson(dirname, map)
 }
 
 function checkKeyExists(propertyName: string, propertyInitialize: ts.Expression, templateText: string | undefined, missingKeyErrors: CheckError[], file: string, sourceFile: ts.SourceFile) {

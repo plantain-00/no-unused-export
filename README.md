@@ -21,6 +21,8 @@ A CLI tool to check whether exported things in a module is used by other modules
 + check whether less or scss variables are used
 + check whether template use non-public members for angular
 + check whether `key` exist for `v-for` and `trackBy` exists for `*ngFor`
++ check whether module `import`ed in source code is also in `dependencies` or `peerDependencies` of `package.json`(enabled by `--strict`)
++ check whether module in `dependencies` or `peerDependencies` of `package.json` is also `import`ed in source code (enabled by `--strict`)
 
 ## usage
 
