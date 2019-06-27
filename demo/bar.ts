@@ -6,7 +6,7 @@ import { hh } from "./foo";
 
 console.log(hh);
 
-import a = require('glob')
+import a = require('glob/common')
 
 import 'minimist'
 
