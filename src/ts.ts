@@ -204,7 +204,7 @@ export function check(uniqFiles: string[]) {
     })
   }
   for (const [file, values] of packageJsonMap) {
-    const absolutePath = path.relative('.', file)
+    const absolutePath = path.relative('.', file).split('\\').join('/')
     for (const value of values) {
       if (!value.imported && value.name !== 'tslib') {
         unusedDependencyErrors.push({ file: absolutePath, name: value.name, line: 0, character: 0, type: `'package.json'` })
@@ -232,11 +232,12 @@ function checkImport(
   if (stringLiteral.text.startsWith('.')) {
     return
   }
+  const moduleName = stringLiteral.text.split('/')[0]
   const definitions = languageService.getDefinitionAtPosition(file, stringLiteral.end)
   let isValidPackage = false
   if (definitions && definitions.length > 0) {
     const definition = definitions[0]
-    if (!definition.fileName.includes(nodePath)) {
+    if (!definition.fileName.includes('node_modules/@types/node')) {
       isValidPackage = true
     }
   } else {
@@ -244,17 +245,15 @@ function checkImport(
   }
   if (isValidPackage) {
     const packageJson = getPackageJson(file, packageJsonMap)
-    const dependency = packageJson.find(p => p.name === stringLiteral.text)
+    const dependency = packageJson.find(p => p.name === moduleName)
     if (dependency) {
       dependency.imported = true
     } else {
       const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, stringLiteral.getStart(sourceFile))
-      missingDependencyErrors.push({ file, name: stringLiteral.text, line, character, type: `'import'` })
+      missingDependencyErrors.push({ file, name: moduleName, line, character, type: `'import'` })
     }
   }
 }
-
-const nodePath = path.join('node_modules', '@types', 'node')
 
 function getPackageJson(file: string, map: Map<string, { name: string, imported: boolean }[]>): { name: string, imported: boolean }[] {
   const dirname = path.dirname(file)
