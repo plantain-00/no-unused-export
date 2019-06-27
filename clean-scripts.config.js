@@ -7,12 +7,12 @@ module.exports = {
   build: [
     'rimraf dist/',
     'tsc -p src/',
-    'node dist/index.js demo/*.ts demo/*.less demo/*.scss --strict --suppressError > demo/result.txt'
+    'node dist/index.js demo/*.ts demo/*.less demo/*.scss src/*.ts --strict --suppressError > demo/result.txt'
   ],
   lint: {
     ts: `tslint ${tsFiles}`,
     js: `standard ${jsFiles}`,
-    export: `node dist/index.js ${tsFiles}`,
+    export: `node dist/index.js ${tsFiles} --strict`,
     commit: `commitlint --from=HEAD~1`,
     markdown: `markdownlint README.md`,
     typeCoverage: 'type-coverage -p src --strict --ignore-catch'

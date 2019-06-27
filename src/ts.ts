@@ -204,9 +204,10 @@ export function check(uniqFiles: string[]) {
     })
   }
   for (const [file, values] of packageJsonMap) {
+    const absolutePath = path.relative('.', file)
     for (const value of values) {
-      if (!value.imported) {
-        unusedDependencyErrors.push({ file, name: value.name, line: 0, character: 0, type: `'package.json'` })
+      if (!value.imported && value.name !== 'tslib') {
+        unusedDependencyErrors.push({ file: absolutePath, name: value.name, line: 0, character: 0, type: `'package.json'` })
       }
     }
   }
@@ -228,18 +229,27 @@ function checkImport(
   missingDependencyErrors: CheckError[],
   sourceFile: ts.SourceFile
 ) {
+  if (stringLiteral.text.startsWith('.')) {
+    return
+  }
   const definitions = languageService.getDefinitionAtPosition(file, stringLiteral.end)
+  let isValidPackage = false
   if (definitions && definitions.length > 0) {
     const definition = definitions[0]
-    if (definition.fileName.includes('node_modules') && !definition.fileName.includes(nodePath)) {
-      const packageJson = getPackageJson(file, packageJsonMap)
-      const dependency = packageJson.find(p => p.name === stringLiteral.text)
-      if (dependency) {
-        dependency.imported = true
-      } else {
-        const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, stringLiteral.getStart(sourceFile))
-        missingDependencyErrors.push({ file, name: stringLiteral.text, line, character, type: `'import'` })
-      }
+    if (!definition.fileName.includes(nodePath)) {
+      isValidPackage = true
+    }
+  } else {
+    isValidPackage = true
+  }
+  if (isValidPackage) {
+    const packageJson = getPackageJson(file, packageJsonMap)
+    const dependency = packageJson.find(p => p.name === stringLiteral.text)
+    if (dependency) {
+      dependency.imported = true
+    } else {
+      const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, stringLiteral.getStart(sourceFile))
+      missingDependencyErrors.push({ file, name: stringLiteral.text, line, character, type: `'import'` })
     }
   }
 }

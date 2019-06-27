@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "typescript": "3",
-    "tslib": "1"
+    "postcss-scss": "1"
   }
 }

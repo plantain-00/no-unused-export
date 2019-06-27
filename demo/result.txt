@@ -20,8 +20,9 @@ demo/foo.ts:96:15 missing 'key' or 'trackBy' for 'v-for' or '*ngFor'(error count
 dependency is missing in package.json, please add it:
 demo/bar.ts:9:20 missing dependency for 'import': glob
 demo/bar.ts:11:8 missing dependency for 'import': minimist
+demo/bar.ts:17:29 missing dependency for 'import': postcss-less
 dependency is unused in package.json, please remove it:
-/Users/yaoyao/repositories/no-unused-export/demo/package.json:1:1 unused dependency for 'package.json': tslib
+demo/package.json:1:1 unused dependency for 'package.json': postcss-scss
 unreferenced scss variables found, please remove it or add "@public":
 demo/variable.scss:4:1 unreferenced scss variable: variable3
 check no unused export fail.
