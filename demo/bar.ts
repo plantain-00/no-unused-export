@@ -15,3 +15,5 @@ import ts from 'typescript'
 import * as fs from 'fs'
 
 import { parse, Node } from 'postcss-less'
+
+import '@angular/core'

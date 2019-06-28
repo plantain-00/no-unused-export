@@ -232,7 +232,10 @@ function checkImport(
   if (stringLiteral.text.startsWith('.')) {
     return
   }
-  const moduleName = stringLiteral.text.split('/')[0]
+  const moduleNameParts = stringLiteral.text.split('/')
+  const moduleName = moduleNameParts[0].startsWith('@') && moduleNameParts.length > 1
+    ? moduleNameParts[0] + '/' + moduleNameParts[1]
+    : moduleNameParts[0]
   const definitions = languageService.getDefinitionAtPosition(file, stringLiteral.end)
   let isValidPackage = false
   if (definitions && definitions.length > 0) {

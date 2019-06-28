@@ -21,6 +21,7 @@ dependency is missing in package.json, please add it:
 demo/bar.ts:9:20 missing dependency for 'import': glob
 demo/bar.ts:11:8 missing dependency for 'import': minimist
 demo/bar.ts:17:29 missing dependency for 'import': postcss-less
+demo/bar.ts:19:8 missing dependency for 'import': @angular/core
 dependency is unused in package.json, please remove it:
 demo/package.json:1:1 unused dependency for 'package.json': postcss-scss
 unreferenced scss variables found, please remove it or add "@public":
