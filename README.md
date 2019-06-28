@@ -1,4 +1,4 @@
-# no-used-export
+# no-unused-export
 
 [![Dependency Status](https://david-dm.org/plantain-00/no-unused-export.svg)](https://david-dm.org/plantain-00/no-unused-export)
 [![devDependency Status](https://david-dm.org/plantain-00/no-unused-export/dev-status.svg)](https://david-dm.org/plantain-00/no-unused-export#info=devDependencies)
