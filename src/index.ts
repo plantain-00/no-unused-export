@@ -80,6 +80,8 @@ async function executeCommandLine() {
     needModules.push(argv['need-module'])
   }
 
+  const strict = argv.strict
+
   const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith('.ts') || file.toLowerCase().endsWith('.tsx'))
   if (tsFiles.length > 0) {
     const {
@@ -89,7 +91,7 @@ async function executeCommandLine() {
       missingKeyErrors,
       missingDependencyErrors,
       unusedDependencyErrors
-    } = ts.check(tsFiles, ignoreModules, needModules)
+    } = ts.check(tsFiles, ignoreModules, needModules, strict)
     if (unusedExportsErrors.length > 0) {
       console.log(`unused exported things found, please remove "export" or add "@public":`)
       for (const error of unusedExportsErrors) {
@@ -119,7 +121,7 @@ async function executeCommandLine() {
       }
       errorCount += missingKeyErrors.length
     }
-    if (argv.strict) {
+    if (strict) {
       if (missingDependencyErrors.length > 0) {
         console.log(`dependency is missing in package.json, please add it:`)
         for (const error of missingDependencyErrors) {
