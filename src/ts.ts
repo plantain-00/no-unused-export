@@ -2,6 +2,7 @@ import * as ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as parse5 from 'parse5'
+import module from 'module'
 
 // tslint:disable-next-line:cognitive-complexity no-big-function
 export function check(uniqFiles: string[], ignoreModules: string[], needModules: string[], strict: boolean) {
@@ -191,14 +192,14 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
         if (node.kind === ts.SyntaxKind.ImportDeclaration) {
           const importDeclaration = node as ts.ImportDeclaration
           if (importDeclaration.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral) {
-            checkImport(importDeclaration.moduleSpecifier as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
+            checkImport(importDeclaration.moduleSpecifier as ts.StringLiteral, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
           }
         } else if (node.kind === ts.SyntaxKind.ImportEqualsDeclaration) {
           const importDeclaration = node as ts.ImportEqualsDeclaration
           if (importDeclaration.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference) {
             const expression = (importDeclaration.moduleReference as ts.ExternalModuleReference).expression
             if (expression.kind === ts.SyntaxKind.StringLiteral) {
-              checkImport(expression as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
+              checkImport(expression as ts.StringLiteral, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
             }
           }
         }
@@ -227,7 +228,6 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
 
 function checkImport(
   stringLiteral: ts.StringLiteral,
-  languageService: ts.LanguageService,
   file: string,
   packageJsonMap: Map<string, { name: string, imported: boolean }[]>,
   missingDependencyErrors: CheckError[],
@@ -241,28 +241,19 @@ function checkImport(
   const moduleName = moduleNameParts[0].startsWith('@') && moduleNameParts.length > 1
     ? moduleNameParts[0] + '/' + moduleNameParts[1]
     : moduleNameParts[0]
+  if (module.builtinModules.includes(moduleName)) {
+    return
+  }
   if (ignoreModules.includes(moduleName)) {
     return
   }
-  const definitions = languageService.getDefinitionAtPosition(file, stringLiteral.end)
-  let isValidPackage = false
-  if (definitions && definitions.length > 0) {
-    const definition = definitions[0]
-    if (!definition.fileName.includes('node_modules/@types/node')) {
-      isValidPackage = true
-    }
+  const packageJson = getPackageJson(file, packageJsonMap)
+  const dependency = packageJson.find(p => p.name === moduleName)
+  if (dependency) {
+    dependency.imported = true
   } else {
-    isValidPackage = true
-  }
-  if (isValidPackage) {
-    const packageJson = getPackageJson(file, packageJsonMap)
-    const dependency = packageJson.find(p => p.name === moduleName)
-    if (dependency) {
-      dependency.imported = true
-    } else {
-      const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, stringLiteral.getStart(sourceFile))
-      missingDependencyErrors.push({ file, name: moduleName, line, character, type: `'import'` })
-    }
+    const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, stringLiteral.getStart(sourceFile))
+    missingDependencyErrors.push({ file, name: moduleName, line, character, type: `'import'` })
   }
 }
 

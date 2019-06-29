@@ -47,7 +47,7 @@ export const foo = 1;
 
 Ignore checking modules provided by runtime(eg, `fs` module in nodejs program, `vscode` module in vscode plugin program) or only providing types(eg, `estree`), they shouldn't be in `dependencies` or `peerDependencies`
 
-nodejs modules are ignored by default
+nodejs builtin modules are ignored by default
 
 ### `--need-module tslib`
 
