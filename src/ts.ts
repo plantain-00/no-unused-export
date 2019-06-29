@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as parse5 from 'parse5'
 
 // tslint:disable-next-line:cognitive-complexity no-big-function
-export function check(uniqFiles: string[]) {
+export function check(uniqFiles: string[], ignoreModules: string[], needModules: string[]) {
   const languageService = ts.createLanguageService({
     getCompilationSettings() {
       return {
@@ -190,14 +190,14 @@ export function check(uniqFiles: string[]) {
       if (node.kind === ts.SyntaxKind.ImportDeclaration) {
         const importDeclaration = node as ts.ImportDeclaration
         if (importDeclaration.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral) {
-          checkImport(importDeclaration.moduleSpecifier as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile)
+          checkImport(importDeclaration.moduleSpecifier as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
         }
       } else if (node.kind === ts.SyntaxKind.ImportEqualsDeclaration) {
         const importDeclaration = node as ts.ImportEqualsDeclaration
         if (importDeclaration.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference) {
           const expression = (importDeclaration.moduleReference as ts.ExternalModuleReference).expression
           if (expression.kind === ts.SyntaxKind.StringLiteral) {
-            checkImport(expression as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile)
+            checkImport(expression as ts.StringLiteral, languageService, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
           }
         }
       }
@@ -206,7 +206,7 @@ export function check(uniqFiles: string[]) {
   for (const [file, values] of packageJsonMap) {
     const absolutePath = path.relative('.', file).split('\\').join('/')
     for (const value of values) {
-      if (!value.imported && value.name !== 'tslib') {
+      if (!value.imported && !needModules.includes(value.name)) {
         unusedDependencyErrors.push({ file: absolutePath, name: value.name, line: 0, character: 0, type: `'package.json'` })
       }
     }
@@ -227,7 +227,8 @@ function checkImport(
   file: string,
   packageJsonMap: Map<string, { name: string, imported: boolean }[]>,
   missingDependencyErrors: CheckError[],
-  sourceFile: ts.SourceFile
+  sourceFile: ts.SourceFile,
+  ignoreModules: string[]
 ) {
   if (stringLiteral.text.startsWith('.')) {
     return
@@ -236,6 +237,9 @@ function checkImport(
   const moduleName = moduleNameParts[0].startsWith('@') && moduleNameParts.length > 1
     ? moduleNameParts[0] + '/' + moduleNameParts[1]
     : moduleNameParts[0]
+  if (ignoreModules.includes(moduleName)) {
+    return
+  }
   const definitions = languageService.getDefinitionAtPosition(file, stringLiteral.end)
   let isValidPackage = false
   if (definitions && definitions.length > 0) {

@@ -42,3 +42,13 @@ A CLI tool to check whether exported things in a module is used by other modules
  */
 export const foo = 1;
 ```
+
+### `--ignore-module estree`
+
+Ignore checking modules provided by runtime(eg, `fs` module in nodejs program, `vscode` module in vscode plugin program) or only providing types(eg, `estree`), they shouldn't be in `dependencies` or `peerDependencies`
+
+nodejs modules are ignored by default
+
+### `--need-module tslib`
+
+Ignore checking modules used by other imported module(eg, `tslib` by `typescript` when `--importHelpers` enabled), they should be in `dependencies` or `peerDependencies`

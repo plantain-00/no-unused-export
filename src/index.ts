@@ -11,6 +11,8 @@ function showToolVersion() {
   console.log(`Version: ${packageJson.version}`)
 }
 
+// tslint:disable:no-duplicate-string
+
 function globAsync(pattern: string, ignore?: string | string[]) {
   return new Promise<string[]>((resolve, reject) => {
     glob(pattern, { ignore }, (error, matches) => {
@@ -33,6 +35,8 @@ async function executeCommandLine() {
     e: string | string[]
     exclude: string | string[]
     strict: boolean
+    'ignore-module' ?: string | string[]
+    'need-module' ?: string | string[]
   }
 
   const showVersion = argv.v || argv.version
@@ -62,6 +66,20 @@ async function executeCommandLine() {
 
   let errorCount = 0
 
+  let ignoreModules: string[] = []
+  if (Array.isArray(argv['ignore-module'])) {
+    ignoreModules = argv['ignore-module']
+  } else if (argv['ignore-module']) {
+    ignoreModules.push(argv['ignore-module'])
+  }
+
+  let needModules: string[] = []
+  if (Array.isArray(argv['need-module'])) {
+    needModules = argv['need-module']
+  } else if (argv['need-module']) {
+    needModules.push(argv['need-module'])
+  }
+
   const tsFiles = uniqFiles.filter(file => file.toLowerCase().endsWith('.ts') || file.toLowerCase().endsWith('.tsx'))
   if (tsFiles.length > 0) {
     const {
@@ -71,7 +89,7 @@ async function executeCommandLine() {
       missingKeyErrors,
       missingDependencyErrors,
       unusedDependencyErrors
-    } = ts.check(tsFiles)
+    } = ts.check(tsFiles, ignoreModules, needModules)
     if (unusedExportsErrors.length > 0) {
       console.log(`unused exported things found, please remove "export" or add "@public":`)
       for (const error of unusedExportsErrors) {
