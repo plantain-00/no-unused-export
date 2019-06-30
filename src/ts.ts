@@ -7,6 +7,7 @@ import { collectCanOnlyBePublicErrors, isAngularAttrName } from './template'
 import { collectMissingKeyErrors } from './key'
 import { collectUnusedExportsErrors } from './export'
 import { collectUnreferencedMembersErrors, collectReferencedMembers } from './class-member'
+import { collectPromiseNotAwaitErrors } from './promise'
 
 // tslint:disable-next-line:cognitive-complexity no-big-function
 export function check(uniqFiles: string[], ignoreModules: string[], needModules: string[], strict: boolean) {
@@ -37,12 +38,14 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
     readDirectory: ts.sys.readDirectory
   })
   const program = ts.createProgram(uniqFiles, { target: ts.ScriptTarget.ESNext })
+  const checker = program.getTypeChecker()
   const unusedExportsErrors: CheckError[] = []
   const unreferencedMembersErrors: CheckError[] = []
   const canOnlyBePublicErrors: CheckError[] = []
   const missingKeyErrors: CheckError[] = []
   const missingDependencyErrors: CheckError[] = []
   const unusedDependencyErrors: CheckError[] = []
+  const promiseNotAwaitErrors: CheckError[] = []
   const packageJsonMap = new Map<string, { name: string, imported: boolean }[]>()
   for (const file of uniqFiles) {
     const sourceFile = program.getSourceFile(file)
@@ -120,6 +123,12 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
 
       if (strict) {
         collectMissingDependencyErrors(node, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
+
+        for (const child of iterateNode(node)) {
+          if (child.kind === ts.SyntaxKind.CallExpression) {
+            collectPromiseNotAwaitErrors(child as ts.CallExpression, checker, promiseNotAwaitErrors, file, sourceFile)
+          }
+        }
       }
     })
   }
@@ -132,7 +141,16 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
     canOnlyBePublicErrors,
     missingKeyErrors,
     missingDependencyErrors,
-    unusedDependencyErrors
+    unusedDependencyErrors,
+    promiseNotAwaitErrors
+  }
+}
+
+function* iterateNode(node: ts.Node): IterableIterator<ts.Node> {
+  yield node
+  const children = node.getChildren()
+  for (const child of children) {
+    yield* iterateNode(child)
   }
 }
 

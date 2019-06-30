@@ -111,3 +111,12 @@ class Ll {
 })
 class Mm {
 }
+
+async function foo() {
+  bar()
+  return 1
+}
+
+function bar() {
+  return Promise.resolve(1)
+}

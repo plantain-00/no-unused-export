@@ -23,6 +23,7 @@ A CLI tool to check whether exported things in a module is used by other modules
 + check whether `key` exist for `v-for` and `trackBy` exists for `*ngFor`
 + check whether module `import`ed in source code is also in `dependencies` or `peerDependencies` of `package.json`(enabled by `--strict`)
 + check whether module in `dependencies` or `peerDependencies` of `package.json` is also `import`ed in source code (enabled by `--strict`)
++ check whether call expression returned `Promise` is `await`ed in `async` function or method (enabled by `--strict`)
 
 ## usage
 

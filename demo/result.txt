@@ -24,6 +24,8 @@ demo/bar.ts:19:8 missing dependency for 'import': @angular/core
 dependency is unused in package.json, please remove it:
 demo/package.json:1:1 unused dependency for 'package.json': postcss-scss
 package.json:1:1 unused dependency for 'package.json': glob
+promise is not await in async function or method, maybe it's a bug:
+demo/foo.ts:116:3 promise is not await: bar
 unreferenced scss variables found, please remove it or add "@public":
 demo/variable.scss:4:1 unreferenced scss variable: variable3
 check no unused export fail.

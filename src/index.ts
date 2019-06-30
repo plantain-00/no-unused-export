@@ -90,7 +90,8 @@ async function executeCommandLine() {
       canOnlyBePublicErrors,
       missingKeyErrors,
       missingDependencyErrors,
-      unusedDependencyErrors
+      unusedDependencyErrors,
+      promiseNotAwaitErrors
     } = ts.check(tsFiles, ignoreModules, needModules, strict)
     if (unusedExportsErrors.length > 0) {
       console.log(`unused exported things found, please remove "export" or add "@public":`)
@@ -135,6 +136,13 @@ async function executeCommandLine() {
           console.log(`${error.file}:${error.line + 1}:${error.character + 1} unused dependency for ${error.type}: ${error.name}`)
         }
         errorCount += unusedDependencyErrors.length
+      }
+      if (promiseNotAwaitErrors.length > 0) {
+        console.log(`promise is not await in async function or method, maybe it's a bug:`)
+        for (const error of promiseNotAwaitErrors) {
+          console.log(`${error.file}:${error.line + 1}:${error.character + 1} promise is not await: ${error.name}`)
+        }
+        errorCount += promiseNotAwaitErrors.length
       }
     }
   }
