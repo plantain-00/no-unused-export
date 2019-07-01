@@ -1,31 +1,59 @@
 import ts from 'typescript'
 
+// tslint:disable-next-line:cognitive-complexity
 export function collectPromiseNotAwaitErrors(
-  callExpression: ts.CallExpression,
+  node: ts.Node,
   checker: ts.TypeChecker,
   promiseNotAwaitErrors: CheckError[],
   file: string,
   sourceFile: ts.SourceFile
 ) {
-  if (callExpression.parent.kind === ts.SyntaxKind.ReturnStatement || callExpression.parent.kind === ts.SyntaxKind.AwaitExpression) {
-    return
-  }
+  if (ts.isCallExpression(node)) {
+    if (ts.isReturnStatement(node.parent) || ts.isAwaitExpression(node.parent)) {
+      return
+    }
 
-  const functionNode = findFunction(callExpression)
-  if (!functionNode || !functionNode.modifiers || functionNode.modifiers.every((m) => m.kind !== ts.SyntaxKind.AsyncKeyword)) {
-    return
-  }
+    const functionNode = findFunction(node)
+    if (!functionNode || !functionNode.modifiers || functionNode.modifiers.every((m) => m.kind !== ts.SyntaxKind.AsyncKeyword)) {
+      return
+    }
 
-  const signature = checker.getResolvedSignature(callExpression)
+    checkCallExpressionReturnPromise(node, checker, promiseNotAwaitErrors, file, sourceFile)
+  } else if (ts.isIfStatement(node) || ts.isWhileStatement(node)) {
+    if (ts.isCallExpression(node.expression)) {
+      checkCallExpressionReturnPromise(node.expression, checker, promiseNotAwaitErrors, file, sourceFile)
+    } else if (ts.isIdentifier(node.expression)) {
+      const type = checker.getTypeAtLocation(node.expression)
+      checkTypeIsPromise(node, type, promiseNotAwaitErrors, file, sourceFile)
+    }
+  }
+}
+
+function checkCallExpressionReturnPromise(
+  node: ts.CallExpression,
+  checker: ts.TypeChecker,
+  promiseNotAwaitErrors: CheckError[],
+  file: string,
+  sourceFile: ts.SourceFile
+) {
+  const signature = checker.getResolvedSignature(node)
   if (signature) {
     const returnType = checker.getReturnTypeOfSignature(signature)
-    if (returnType.symbol && returnType.symbol.escapedName === 'Promise') {
-      const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, callExpression.getStart(sourceFile))
-      const text = callExpression.expression.kind === ts.SyntaxKind.Identifier
-        ? (callExpression.expression as ts.Identifier).text
-        : ''
-      promiseNotAwaitErrors.push({ file, name: text, line, character, type: '' })
-    }
+    checkTypeIsPromise(node, returnType, promiseNotAwaitErrors, file, sourceFile)
+  }
+}
+
+function checkTypeIsPromise(
+  node: ts.IfStatement | ts.WhileStatement | ts.CallExpression,
+  type: ts.Type,
+  promiseNotAwaitErrors: CheckError[],
+  file: string,
+  sourceFile: ts.SourceFile
+) {
+  if (type.symbol && type.symbol.escapedName === 'Promise') {
+    const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, node.getStart(sourceFile))
+    const text = ts.isIdentifier(node.expression) ? node.expression.text : ''
+    promiseNotAwaitErrors.push({ file, name: text, line, character, type: '' })
   }
 }
 
@@ -36,13 +64,13 @@ function findFunction(node: ts.Node) {
 
 function findParentFunction(node: ts.Node): ts.Node | undefined {
   const parent = node.parent
-  if (parent.kind === ts.SyntaxKind.FunctionDeclaration
-    || parent.kind === ts.SyntaxKind.FunctionExpression
-    || parent.kind === ts.SyntaxKind.ArrowFunction
-    || parent.kind === ts.SyntaxKind.MethodDeclaration) {
+  if (ts.isFunctionDeclaration(parent)
+    || ts.isFunctionExpression(parent)
+    || ts.isArrowFunction(parent)
+    || ts.isMethodDeclaration(parent)) {
     return parent
   }
-  if (parent.kind === ts.SyntaxKind.SourceFile) {
+  if (ts.isSourceFile(parent)) {
     return undefined
   }
   return findParentFunction(parent)

@@ -11,19 +11,14 @@ export function collectMissingDependencyErrors(
   sourceFile: ts.SourceFile,
   ignoreModules: string[]
 ) {
-  if (node.kind === ts.SyntaxKind.ImportDeclaration) {
-    const importDeclaration = node as ts.ImportDeclaration
-    if (importDeclaration.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral) {
-      checkImport(importDeclaration.moduleSpecifier as ts.StringLiteral, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
+  if (ts.isImportDeclaration(node)) {
+    if (ts.isStringLiteral(node.moduleSpecifier)) {
+      checkImport(node.moduleSpecifier, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
     }
-  } else if (node.kind === ts.SyntaxKind.ImportEqualsDeclaration) {
-    const importDeclaration = node as ts.ImportEqualsDeclaration
-    if (importDeclaration.moduleReference.kind === ts.SyntaxKind.ExternalModuleReference) {
-      const expression = (importDeclaration.moduleReference as ts.ExternalModuleReference).expression
-      if (expression.kind === ts.SyntaxKind.StringLiteral) {
-        checkImport(expression as ts.StringLiteral, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
-      }
-    }
+  } else if (ts.isImportEqualsDeclaration(node)
+    && ts.isExternalModuleReference(node.moduleReference)
+    && ts.isStringLiteral(node.moduleReference.expression)) {
+    checkImport(node.moduleReference.expression, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
   }
 }
 

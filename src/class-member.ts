@@ -8,10 +8,9 @@ export function collectUnreferencedMembersErrors(
   classDeclaration: ts.ClassDeclaration
 ) {
   for (const member of classDeclaration.members) {
-    if (!referencedMembers.has(member)) {
-      const identifier = member.name as ts.Identifier
-      const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, identifier.getStart(sourceFile))
-      unreferencedMembersErrors.push({ file, name: identifier.text, line, character, type: `class ${classDeclaration.name!.text} member` })
+    if (!referencedMembers.has(member) && member.name && ts.isIdentifier(member.name)) {
+      const { line, character } = ts.getLineAndCharacterOfPosition(sourceFile, member.name.getStart(sourceFile))
+      unreferencedMembersErrors.push({ file, name: member.name.text, line, character, type: `class ${classDeclaration.name!.text} member` })
     }
   }
 }
@@ -26,26 +25,28 @@ export function collectReferencedMembers(
   const referencedMembers = new Set<ts.ClassElement>()
   const decoratedMembers = new Set<string>()
   for (const member of classDeclaration.members) {
-    if (member.kind === ts.SyntaxKind.Constructor) {
+    if (ts.isConstructorDeclaration(member)) {
       referencedMembers.add(member)
     } else if (member.modifiers
       && member.modifiers.some(m => m.kind === ts.SyntaxKind.PublicKeyword
         || m.kind === ts.SyntaxKind.PrivateKeyword
         || m.kind === ts.SyntaxKind.ProtectedKeyword)) {
       referencedMembers.add(member)
-    } else {
-      const identifier = member.name as ts.Identifier
+    } else if (member.name && ts.isIdentifier(member.name)) {
+      const identifier = member.name
       if (hookNames.includes(identifier.text)) {
         referencedMembers.add(member)
       } else if (member.decorators) {
         for (const decorator of member.decorators) {
-          if (decorator.expression.kind === ts.SyntaxKind.CallExpression) {
-            const { expression } = decorator.expression as ts.CallExpression
-            const text = (expression as ts.Identifier).text
-            if (text === 'Input' || text === 'Output') {
-              referencedMembers.add(member)
-              decoratedMembers.add(identifier.text)
-              break
+          if (ts.isCallExpression(decorator.expression)) {
+            const { expression } = decorator.expression
+            if (ts.isIdentifier(expression)) {
+              const text = expression.text
+              if (text === 'Input' || text === 'Output') {
+                referencedMembers.add(member)
+                decoratedMembers.add(identifier.text)
+                break
+              }
             }
           }
         }

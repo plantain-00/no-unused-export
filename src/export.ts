@@ -1,5 +1,6 @@
 import ts from 'typescript'
 
+// tslint:disable-next-line:cognitive-complexity
 export function collectUnusedExportsErrors(
   node: ts.Node,
   file: string,
@@ -11,18 +12,19 @@ export function collectUnusedExportsErrors(
     const jsDocs = getJsDocs(node)
     const isPublic = jsDocs.find(jsDoc => jsDoc.name === 'public')
     if (!isPublic) {
-      if (node.kind === ts.SyntaxKind.TypeAliasDeclaration) {
-        collectErrors(file, (node as ts.TypeAliasDeclaration).name, sourceFile, 'type', languageService, unusedExportsErrors)
-      } else if (node.kind === ts.SyntaxKind.FunctionDeclaration) {
-        collectErrors(file, (node as ts.FunctionDeclaration).name, sourceFile, 'function', languageService, unusedExportsErrors)
-      } else if (node.kind === ts.SyntaxKind.ClassDeclaration) {
-        collectErrors(file, (node as ts.ClassDeclaration).name, sourceFile, 'class', languageService, unusedExportsErrors)
-      } else if (node.kind === ts.SyntaxKind.InterfaceDeclaration) {
-        collectErrors(file, (node as ts.InterfaceDeclaration).name, sourceFile, 'interface', languageService, unusedExportsErrors)
-      } else if (node.kind === ts.SyntaxKind.VariableStatement) {
-        const declarationList = (node as ts.VariableStatement).declarationList
-        for (const declaration of declarationList.declarations) {
-          collectErrors(file, declaration.name as ts.Identifier, sourceFile, 'variable', languageService, unusedExportsErrors)
+      if (ts.isTypeAliasDeclaration(node)) {
+        collectErrors(file, node.name, sourceFile, 'type', languageService, unusedExportsErrors)
+      } else if (ts.isFunctionDeclaration(node)) {
+        collectErrors(file, node.name, sourceFile, 'function', languageService, unusedExportsErrors)
+      } else if (ts.isClassDeclaration(node)) {
+        collectErrors(file, node.name, sourceFile, 'class', languageService, unusedExportsErrors)
+      } else if (ts.isInterfaceDeclaration(node)) {
+        collectErrors(file, node.name, sourceFile, 'interface', languageService, unusedExportsErrors)
+      } else if (ts.isVariableStatement(node)) {
+        for (const declaration of node.declarationList.declarations) {
+          if (ts.isIdentifier(declaration.name)) {
+            collectErrors(file, declaration.name, sourceFile, 'variable', languageService, unusedExportsErrors)
+          }
         }
       }
     }

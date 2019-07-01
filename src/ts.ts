@@ -55,58 +55,58 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
     sourceFile.forEachChild(node => {
       collectUnusedExportsErrors(node, file, sourceFile, languageService, unusedExportsErrors)
 
-      if (node.kind === ts.SyntaxKind.ClassDeclaration) {
-        const classDeclaration = node as ts.ClassDeclaration
-        const members = classDeclaration.members
-        const referencedMembers = collectReferencedMembers(classDeclaration, languageService, file, node)
+      if (ts.isClassDeclaration(node)) {
+        const referencedMembers = collectReferencedMembers(node, languageService, file, node)
 
-        const decorators = classDeclaration.decorators
+        const decorators = node.decorators
         if (decorators) {
           for (const decorator of decorators) {
-            if (decorator.expression.kind === ts.SyntaxKind.CallExpression) {
-              const { expression, arguments: expressionArguments } = decorator.expression as ts.CallExpression
-              if ((expression as ts.Identifier).text === 'Component' && expressionArguments.length > 0) {
-                const argument = expressionArguments[0]
-                if (argument.kind === ts.SyntaxKind.ObjectLiteralExpression) {
-                  const properties = (argument as ts.ObjectLiteralExpression).properties
-                  for (const property of properties) {
-                    if (property.kind === ts.SyntaxKind.PropertyAssignment) {
-                      const propertyName = (property.name as ts.Identifier).text
-                      if (propertyName === 'template') {
-                        const text = getText(program, languageService, file, property.initializer)
-                        collectCanOnlyBePublicErrors(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
-                        collectMissingKeyErrors(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
-                      } else if (propertyName === 'props') {
-                        if (property.initializer.kind === ts.SyntaxKind.ArrayLiteralExpression) {
-                          const elements = (property.initializer as ts.ArrayLiteralExpression).elements
-                          for (const member of members) {
-                            if (!referencedMembers.has(member)
-                              && elements.some(e => getText(program, languageService, file, e) === (member.name as ts.Identifier).text)) {
+            if (ts.isCallExpression(decorator.expression)
+              && ts.isIdentifier(decorator.expression.expression)
+              && decorator.expression.expression.text === 'Component'
+              && decorator.expression.arguments.length > 0) {
+              const argument = decorator.expression.arguments[0]
+              if (ts.isObjectLiteralExpression(argument)) {
+                for (const property of argument.properties) {
+                  if (ts.isPropertyAssignment(property) && ts.isIdentifier(property.name)) {
+                    const propertyName = property.name.text
+                    if (propertyName === 'template') {
+                      const text = getText(program, languageService, file, property.initializer)
+                      collectCanOnlyBePublicErrors(node.members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, node)
+                      collectMissingKeyErrors(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
+                    } else if (propertyName === 'props') {
+                      if (ts.isArrayLiteralExpression(property.initializer)) {
+                        for (const member of node.members) {
+                          if (!referencedMembers.has(member)
+                            && member.name
+                            && ts.isIdentifier(member.name)) {
+                            const text = member.name.text
+                            if (property.initializer.elements.some(e => getText(program, languageService, file, e) === text)) {
                               referencedMembers.add(member)
                             }
                           }
                         }
-                      } else if (propertyName === 'templateUrl') {
-                        const url = getText(program, languageService, file, property.initializer)
-                        if (url) {
-                          let text: string | undefined
-                          try {
-                            text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' })
-                          } catch (error) {
-                            // no action
-                          }
-                          collectCanOnlyBePublicErrors(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
-                          collectMissingKeyErrors(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
+                      }
+                    } else if (propertyName === 'templateUrl') {
+                      const url = getText(program, languageService, file, property.initializer)
+                      if (url) {
+                        let text: string | undefined
+                        try {
+                          text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' })
+                        } catch (error) {
+                          // no action
                         }
-                      } else if (propertyName === 'host' && property.initializer.kind === ts.SyntaxKind.ObjectLiteralExpression) {
-                        const hostProperties = (property.initializer as ts.ObjectLiteralExpression).properties
-                        for (const hostProperty of hostProperties) {
-                          if (hostProperty.kind === ts.SyntaxKind.PropertyAssignment) {
-                            const key = getText(program, languageService, file, hostProperty.name)
-                            if (key && isAngularAttrName(key)) {
-                              const text = getText(program, languageService, file, hostProperty.initializer)
-                              collectCanOnlyBePublicErrors(members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, classDeclaration)
-                            }
+                        collectCanOnlyBePublicErrors(node.members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, node)
+                        collectMissingKeyErrors(propertyName, property.initializer, text, missingKeyErrors, file, sourceFile)
+                      }
+                    } else if (propertyName === 'host' && ts.isObjectLiteralExpression(property.initializer)) {
+                      const hostProperties = property.initializer.properties
+                      for (const hostProperty of hostProperties) {
+                        if (ts.isPropertyAssignment(hostProperty)) {
+                          const key = getText(program, languageService, file, hostProperty.name)
+                          if (key && isAngularAttrName(key)) {
+                            const text = getText(program, languageService, file, hostProperty.initializer)
+                            collectCanOnlyBePublicErrors(node.members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, node)
                           }
                         }
                       }
@@ -118,16 +118,14 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
           }
         }
 
-        collectUnreferencedMembersErrors(referencedMembers, unreferencedMembersErrors, file, sourceFile, classDeclaration)
+        collectUnreferencedMembersErrors(referencedMembers, unreferencedMembersErrors, file, sourceFile, node)
       }
 
       if (strict) {
         collectMissingDependencyErrors(node, file, packageJsonMap, missingDependencyErrors, sourceFile, ignoreModules)
 
         for (const child of iterateNode(node)) {
-          if (child.kind === ts.SyntaxKind.CallExpression) {
-            collectPromiseNotAwaitErrors(child as ts.CallExpression, checker, promiseNotAwaitErrors, file, sourceFile)
-          }
+          collectPromiseNotAwaitErrors(child, checker, promiseNotAwaitErrors, file, sourceFile)
         }
       }
     })
@@ -155,16 +153,15 @@ function* iterateNode(node: ts.Node): IterableIterator<ts.Node> {
 }
 
 function getText(program: ts.Program, languageService: ts.LanguageService, file: string, node: ts.Node): string | undefined {
-  if (node.kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral
-    || node.kind === ts.SyntaxKind.StringLiteral) {
-    return (node as ts.NoSubstitutionTemplateLiteral | ts.StringLiteral).text
-  } else if (node.kind === ts.SyntaxKind.Identifier) {
-    const identifier = node as ts.Identifier
-    const definitions = languageService.getDefinitionAtPosition(file, identifier.end)
+  if (ts.isNoSubstitutionTemplateLiteral(node)
+    || ts.isStringLiteral(node)) {
+    return node.text
+  } else if (ts.isIdentifier(node)) {
+    const definitions = languageService.getDefinitionAtPosition(file, node.end)
     if (definitions && definitions.length > 0) {
       const definition = definitions[0]
       const child = findNodeAtDefinition(program, definition)
-      if (child && child.kind === ts.SyntaxKind.VariableStatement) {
+      if (child && ts.isVariableStatement(child)) {
         return getVariableValue(child, definition.name, program, languageService, file)
       }
     }
@@ -185,12 +182,12 @@ function findNodeAtDefinition(program: ts.Program, definition: ts.DefinitionInfo
   return undefined
 }
 
-function getVariableValue(child: ts.Node, variableName: string, program: ts.Program, languageService: ts.LanguageService, file: string) {
-  const declarations = (child as ts.VariableStatement).declarationList.declarations
+function getVariableValue(child: ts.VariableStatement, variableName: string, program: ts.Program, languageService: ts.LanguageService, file: string) {
+  const declarations = child.declarationList.declarations
   for (const declaration of declarations) {
-    if (declaration.kind === ts.SyntaxKind.VariableDeclaration) {
+    if (ts.isVariableDeclaration(declaration)) {
       const name = declaration.name
-      if (name.kind === ts.SyntaxKind.Identifier
+      if (ts.isIdentifier(name)
         && name.text === variableName) {
         const initializer = declaration.initializer
         if (initializer) {

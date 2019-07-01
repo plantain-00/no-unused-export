@@ -120,3 +120,12 @@ async function foo() {
 function bar() {
   return Promise.resolve(1)
 }
+
+if (bar()) {
+  console.info(1)
+}
+
+const b = bar()
+if (b) {
+  console.info(2)
+}
