@@ -1,6 +1,7 @@
 import ts from 'typescript'
 import * as fs from 'fs'
 import * as path from 'path'
+import { getLanguageService } from 'ts-lib-utils'
 
 import { collectMissingDependencyErrors, collectUnusedDependencyErrors } from './dependency'
 import { collectCanOnlyBePublicErrors, isAngularAttrName } from './template'
@@ -11,32 +12,7 @@ import { collectPromiseNotAwaitErrors } from './promise'
 
 // tslint:disable-next-line:cognitive-complexity no-big-function
 export function check(uniqFiles: string[], ignoreModules: string[], needModules: string[], strict: boolean) {
-  const languageService = ts.createLanguageService({
-    getCompilationSettings() {
-      return {
-        jsx: ts.JsxEmit.React
-      }
-    },
-    getScriptFileNames() {
-      return uniqFiles
-    },
-    getScriptVersion(fileName: string) {
-      return ''
-    },
-    getScriptSnapshot(fileName: string) {
-      if (fileName === '.ts') {
-        return ts.ScriptSnapshot.fromString('')
-      }
-      return ts.ScriptSnapshot.fromString(fs.readFileSync(fileName, { encoding: 'utf8' }))
-    },
-    getCurrentDirectory: () => '.',
-    getDefaultLibFileName(options: ts.CompilerOptions) {
-      return ts.getDefaultLibFilePath(options)
-    },
-    fileExists: ts.sys.fileExists,
-    readFile: ts.sys.readFile,
-    readDirectory: ts.sys.readDirectory
-  })
+  const languageService = getLanguageService(uniqFiles)
   const program = ts.createProgram(uniqFiles, { target: ts.ScriptTarget.ESNext })
   const checker = program.getTypeChecker()
   const unusedExportsErrors: CheckError[] = []
