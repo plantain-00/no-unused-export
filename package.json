@@ -26,20 +26,20 @@
     "@commitlint/cli": "8.1.0",
     "@commitlint/config-conventional": "8.1.0",
     "@types/glob": "7.1.1",
-    "@types/jasmine": "3.3.14",
+    "@types/jasmine": "3.3.16",
     "@types/minimist": "1.2.0",
     "@types/node": "12.6.8",
     "@types/parse5": "5.0.2",
     "clean-release": "2.7.0",
-    "clean-scripts": "1.12.0",
+    "clean-scripts": "1.12.1",
     "jasmine": "3.4.0",
     "markdownlint-cli": "0.17.0",
     "rimraf": "2.6.3",
-    "standard": "13.0.2",
+    "standard": "13.1.0",
     "tslint": "5.18.0",
     "tslint-config-standard": "8.0.1",
     "tslint-sonarts": "1.9.0",
-    "type-coverage": "2.1.0"
+    "type-coverage": "2.2.0-alpha.2"
   },
   "dependencies": {
     "glob": "7.1.4",
@@ -47,7 +47,7 @@
     "parse5": "5.1.0",
     "postcss-less": "3.1.4",
     "postcss-scss": "2.0.0",
-    "ts-lib-utils": "^2.1.0",
+    "ts-lib-utils": "2.2.0-alpha.2",
     "tslib": "1",
     "typescript": "3"
   },
