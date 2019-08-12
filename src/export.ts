@@ -1,6 +1,5 @@
 import ts from 'typescript'
 
-// tslint:disable-next-line:cognitive-complexity
 export function collectUnusedExportsErrors(
   node: ts.Node,
   file: string,
@@ -66,7 +65,7 @@ function getJsDocs(node: ts.Node) {
   return result
 }
 
-type JsDoc = {
+interface JsDoc {
   name: string;
   comment?: string;
 }

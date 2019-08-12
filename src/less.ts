@@ -37,7 +37,6 @@ export function check(uniqFiles: string[]) {
     }
   }
 
-  // tslint:disable-next-line:cognitive-complexity
   function checkVariablesIsUsedForNode(node: Node) {
     if (variables.size > 0) {
       if (node.type === 'decl') {

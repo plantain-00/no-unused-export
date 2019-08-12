@@ -11,8 +11,6 @@ function showToolVersion() {
   console.log(`Version: ${packageJson.version}`)
 }
 
-// tslint:disable:no-duplicate-string
-
 function globAsync(pattern: string, ignore?: string | string[]) {
   return new Promise<string[]>((resolve, reject) => {
     glob(pattern, { ignore }, (error, matches) => {
@@ -25,7 +23,6 @@ function globAsync(pattern: string, ignore?: string | string[]) {
   })
 }
 
-// tslint:disable-next-line:cognitive-complexity
 async function executeCommandLine() {
   const argv = minimist(process.argv.slice(2), { '--': true }) as unknown as {
     v: boolean

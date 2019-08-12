@@ -1,7 +1,6 @@
 import ts from 'typescript'
 import * as parse5 from 'parse5'
 
-// tslint:disable-next-line:cognitive-complexity
 export function collectCanOnlyBePublicErrors(members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
   if (templateText && members.length > 0) {
     const fragment = parse5.parseFragment(templateText) as parse5.DefaultTreeDocumentFragment
@@ -26,7 +25,6 @@ export function collectCanOnlyBePublicErrors(members: ts.NodeArray<ts.ClassEleme
   }
 }
 
-// tslint:disable-next-line:cognitive-complexity
 function memberIsUsedInNode(memberName: string, node: parse5.DefaultTreeNode): boolean | TemplateType {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#text') {

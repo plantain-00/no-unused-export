@@ -1,6 +1,5 @@
 import ts from 'typescript'
 
-// tslint:disable-next-line:cognitive-complexity
 export function collectPromiseNotAwaitErrors(
   node: ts.Node,
   checker: ts.TypeChecker,
@@ -58,7 +57,6 @@ function checkTypeIsPromise(
 }
 
 function findFunction(node: ts.Node) {
-  // tslint:disable-next-line:max-union-size
   return findParentFunction(node) as ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction | ts.MethodDeclaration | undefined
 }
 

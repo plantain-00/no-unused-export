@@ -68,7 +68,7 @@ declare module 'postcss-scss' {
   export type Node = Declaration | Rule | Comment
 }
 
-type CheckError = {
+interface CheckError {
   file: string;
   name: string;
   line: number;

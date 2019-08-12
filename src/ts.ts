@@ -10,7 +10,6 @@ import { collectUnusedExportsErrors } from './export'
 import { collectUnreferencedMembersErrors, collectReferencedMembers } from './class-member'
 import { collectPromiseNotAwaitErrors } from './promise'
 
-// tslint:disable-next-line:cognitive-complexity no-big-function
 export function check(uniqFiles: string[], ignoreModules: string[], needModules: string[], strict: boolean) {
   const languageService = getLanguageService(uniqFiles)
   const program = ts.createProgram(uniqFiles, { target: ts.ScriptTarget.ESNext })

@@ -15,7 +15,6 @@ export function collectUnreferencedMembersErrors(
   }
 }
 
-// tslint:disable-next-line:cognitive-complexity
 export function collectReferencedMembers(
   classDeclaration: ts.ClassDeclaration,
   languageService: ts.LanguageService,

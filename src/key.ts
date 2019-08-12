@@ -13,7 +13,6 @@ export function collectMissingKeyErrors(propertyName: string, propertyInitialize
   }
 }
 
-// tslint:disable-next-line:cognitive-complexity
 function keyExistsInNode(errorCount: number, node: parse5.DefaultTreeNode): number {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#document-fragment') {
