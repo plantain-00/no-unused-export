@@ -91,7 +91,7 @@ async function executeCommandLine() {
       promiseNotAwaitErrors
     } = ts.check(tsFiles, ignoreModules, needModules, strict)
     if (unusedExportsErrors.length > 0) {
-      console.log(`unused exported things found, please remove "export" or add "@public":`)
+      console.log(`unused exported things found, please remove "export" or add @public or @internal or @alpha or @beta:`)
       for (const error of unusedExportsErrors) {
         console.log(`${error.file}:${error.line + 1}:${error.character + 1} unused exported ${error.type}: ${error.name}`)
       }

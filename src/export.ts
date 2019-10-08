@@ -9,7 +9,7 @@ export function collectUnusedExportsErrors(
 ) {
   if (node.modifiers && node.modifiers.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
     const jsDocs = getJsDocs(node)
-    const isPublic = jsDocs.find(jsDoc => jsDoc.name === 'public')
+    const isPublic = jsDocs.find(jsDoc => ['public', 'internal', 'alpha', 'beta'].includes(jsDoc.name))
     if (!isPublic) {
       if (ts.isTypeAliasDeclaration(node)) {
         collectErrors(file, node.name, sourceFile, 'type', languageService, unusedExportsErrors)
