@@ -52,7 +52,7 @@ function checkImport(
   const moduleName = moduleNameParts[0].startsWith('@') && moduleNameParts.length > 1
     ? moduleNameParts[0] + '/' + moduleNameParts[1]
     : moduleNameParts[0]
-  if (module.builtinModules.includes(moduleName)) {
+  if (module.Module.builtinModules.includes(moduleName)) {
     return
   }
   if (ignoreModules.includes(moduleName)) {
