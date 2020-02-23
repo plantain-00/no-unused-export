@@ -75,10 +75,10 @@ const hookNames = [
   'beforeDestroy', 'destroyed',
 
   'render',
-  'componentWillMount', 'componentDidMount',
-  'componentWillReceiveProps',
+  'componentWillMount', 'componentDidMount', 'UNSAFE_componentWillMount',
+  'componentWillReceiveProps', 'UNSAFE_componentWillReceiveProps',
   'shouldComponentUpdate',
-  'componentWillUpdate', 'componentDidUpdate',
+  'componentWillUpdate', 'componentDidUpdate', 'UNSAFE_componentWillUpdate',
   'componentWillUnmount',
 
   'ngOnInit',
