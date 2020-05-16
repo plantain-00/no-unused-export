@@ -27,7 +27,7 @@ A CLI tool to check whether exported things in a module is used by other modules
 
 ## usage
 
-`no-unused-export "src/*.ts"`
+`no-unused-export "src/*.ts" "src/*.tsx"`
 
 ### exclude source files
 

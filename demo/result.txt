@@ -1,5 +1,4 @@
 unused exported things found, please remove "export" or add @public or @internal or @alpha or @beta:
-demo/foo.ts:1:17 unused exported function: aa
 demo/foo.ts:7:13 unused exported type: Cc
 demo/foo.ts:15:14 unused exported class: Dd
 demo/foo.ts:66:18 unused exported interface: Ee
