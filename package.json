@@ -25,22 +25,22 @@
   "devDependencies": {
     "@commitlint/cli": "8.3.5",
     "@commitlint/config-conventional": "8.3.4",
-    "@types/glob": "7.1.1",
+    "@types/glob": "7.1.2",
     "@types/jasmine": "3.5.10",
     "@types/minimist": "1.2.0",
-    "@types/node": "14.0.5",
+    "@types/node": "14.0.11",
     "@types/parse5": "5.0.3",
-    "@typescript-eslint/eslint-plugin": "3.0.0",
-    "@typescript-eslint/parser": "3.0.0",
+    "@typescript-eslint/eslint-plugin": "3.1.0",
+    "@typescript-eslint/parser": "3.1.0",
     "clean-release": "2.11.0",
     "clean-scripts": "1.15.0",
-    "eslint": "7.0.0",
+    "eslint": "7.1.0",
     "eslint-config-prettier": "6.11.0",
     "eslint-plugin-plantain": "1.0.0",
     "jasmine": "3.5.0",
     "markdownlint-cli": "0.23.1",
     "rimraf": "3.0.2",
-    "type-coverage": "2.6.1"
+    "type-coverage": "2.7.1"
   },
   "dependencies": {
     "glob": "7",
