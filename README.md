@@ -29,11 +29,16 @@ A CLI tool to check whether exported things in a module is used by other modules
 
 `no-unused-export "src/*.ts" "src/*.tsx"`
 
-### exclude source files
+## options
 
-`no-unused-export "src/*.ts" --exclude "src/*.d.ts"`
-
-`--exclude` is repeatable
+key | description
+--- | ---
+--ignore-module | Ignore checking modules provided by runtime
+-e,--exclude | exclude source files, repeatable
+--need-module | Ignore checking modules used by other imported module
+-h,--help | Print this message.
+-v,--version | Print the version
+--strict | strict mode
 
 ### exclude `export`s
 

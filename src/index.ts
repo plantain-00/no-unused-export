@@ -11,6 +11,21 @@ function showToolVersion() {
   console.log(`Version: ${packageJson.version}`)
 }
 
+function showHelp() {
+  console.log(`Version ${packageJson.version}
+Syntax:   no-unused-export [options] [file...]
+Examples: no-unused-export "src/*.ts" "src/*.tsx"
+          no-unused-export "src/*.ts" --exclude "src/*.d.ts"
+Options:
+ -h, --help                                         Print this message.
+ -v, --version                                      Print the version
+ -e, --exclude                                      exclude source files, repeatable
+ --need-module                                      Ignore checking modules used by other imported module
+ --ignore-module                                    Ignore checking modules provided by runtime
+ --strict                                           Strict mode
+`)
+}
+
 function globAsync(pattern: string, ignore?: string | string[]) {
   return new Promise<string[]>((resolve, reject) => {
     glob(pattern, { ignore }, (error, matches) => {
@@ -34,12 +49,19 @@ async function executeCommandLine() {
     strict: boolean
     'ignore-module' ?: string | string[]
     'need-module' ?: string | string[]
+    h?: unknown
+    help?: unknown
   }
 
   const showVersion = argv.v || argv.version
   if (showVersion) {
     showToolVersion()
     return
+  }
+
+  if (argv.h || argv.help) {
+    showHelp()
+    process.exit(0)
   }
 
   suppressError = argv.suppressError

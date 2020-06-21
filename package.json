@@ -19,7 +19,7 @@
     "url": "https://github.com/plantain-00/no-unused-export/issues"
   },
   "typeCoverage": {
-    "atLeast": 100
+    "atLeast": 99.17
   },
   "homepage": "https://github.com/plantain-00/no-unused-export#readme",
   "devDependencies": {
@@ -39,7 +39,7 @@
     "markdownlint-cli": "0.23.1",
     "rimraf": "3.0.2",
     "ts-node": "8.10.2",
-    "type-coverage": "2.7.2"
+    "type-coverage": "2.8.2"
   },
   "dependencies": {
     "glob": "7",
