@@ -47,7 +47,7 @@
     "postcss-less": "3",
     "postcss-scss": "2",
     "ts-lib-utils": "2",
-    "tslib": "2",
+    "tslib": "1 || 2",
     "typescript": "3"
   },
   "bin": {
