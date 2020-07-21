@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.12.2](https://github.com/plantain-00/no-unused-export/compare/v1.12.1...v1.12.2) (2020-07-21)
+  
+* chore: revert typescript dependency ([26516f6](https://github.com/plantain-00/no-unused-export/commit/26516f6c6ba75b5249c30d61d87021fb6378cffb))
+
 ## [1.12.1](https://github.com/plantain-00/no-unused-export/compare/v1.12.0...v1.12.1) (2020-07-21)
   
 * chore: support typescript 4.0 beta ([d04bd3d](https://github.com/plantain-00/no-unused-export/commit/d04bd3d826cc6bb7919227f8c2b5d49c16a63f5e))

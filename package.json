@@ -1,6 +1,6 @@
 {
   "name": "no-unused-export",
-  "version": "1.12.1",
+  "version": "1.12.2",
   "description": "A CLI tool to check whether exported things in a module is used by other modules for Typescript.",
   "main": "index.js",
   "scripts": {
