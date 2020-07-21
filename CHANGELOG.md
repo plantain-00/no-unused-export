@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.12.0](https://github.com/plantain-00/no-unused-export/compare/v1.11.1...v1.12.0) (2020-07-21)
+  
+* chore: update yarn lock ([cc3e3d2](https://github.com/plantain-00/no-unused-export/commit/cc3e3d2bfa96bee74ddd134e42cc80ba4410a116))
+* chore: add changelog ([6d8afbb](https://github.com/plantain-00/no-unused-export/commit/6d8afbb6e612d1bb4ccd0211552fbef15b17f550))
+* chore: update dependencies ([6c63845](https://github.com/plantain-00/no-unused-export/commit/6c63845db16db0cb0ca6c6e2f47ba967f694e881)) ([4323500](https://github.com/plantain-00/no-unused-export/commit/4323500ad46107886f0892c5f3008ff0b156e42b))
+* docs: add github ci badge ([53cb614](https://github.com/plantain-00/no-unused-export/commit/53cb61463d375b6623d92c2c15c5c03e30dad93c))
+
 ## [1.11.1](https://github.com/plantain-00/no-unused-export/compare/v1.11.0...v1.11.1) (2020-07-07)
   
 * chore: loose tslib ([0cab592](https://github.com/plantain-00/no-unused-export/commit/0cab5921b2ef87c16b6ae5c399398b8e2257f598))
@@ -58,7 +65,7 @@
 
 ## [1.8.0-alpha.2](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.1...v1.8.0-alpha.2) (2019-06-28)
   
-* fix: module name and fix ci on windows ([7d525c6](https://github.com/plantain-00/no-unused-export/commit/7d525c6013669c102f6c9aa7184ce67297e92310)) ([910a85c](https://github.com/plantain-00/no-unused-export/commit/910a85c8d59a6857091f20301ce9079b346798e3))
+* fix: module name and fix ci on windows ([7d525c6](https://github.com/plantain-00/no-unused-export/commit/7d525c6013669c102f6c9aa7184ce67297e92310))
 
 ## [1.8.0-alpha.1](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.0...v1.8.0-alpha.1) (2019-06-27)
   
