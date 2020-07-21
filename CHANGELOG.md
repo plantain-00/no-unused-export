@@ -1,5 +1,9 @@
 # Change Log
 
+## [1.12.1](https://github.com/plantain-00/no-unused-export/compare/v1.12.0...v1.12.1) (2020-07-21)
+  
+* chore: support typescript 4.0 beta ([d04bd3d](https://github.com/plantain-00/no-unused-export/commit/d04bd3d826cc6bb7919227f8c2b5d49c16a63f5e))
+
 ## [1.12.0](https://github.com/plantain-00/no-unused-export/compare/v1.11.1...v1.12.0) (2020-07-21)
   
 * chore: update yarn lock ([cc3e3d2](https://github.com/plantain-00/no-unused-export/commit/cc3e3d2bfa96bee74ddd134e42cc80ba4410a116))
