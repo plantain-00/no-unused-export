@@ -48,7 +48,7 @@
     "postcss-scss": "2",
     "ts-lib-utils": "2",
     "tslib": "1 || 2",
-    "typescript": "3"
+    "typescript": "3 || 4"
   },
   "bin": {
     "no-unused-export": "bin/no-unused-export"
