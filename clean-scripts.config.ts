@@ -12,7 +12,7 @@ export default {
     ts: `eslint --ext .js,.ts,.tsx ${tsFiles}`,
     export: `node dist/index.js ${tsFiles} --need-module tslib --strict`,
     markdown: `markdownlint README.md`,
-    typeCoverage: 'type-coverage -p src --strict --ignore-catch'
+    typeCoverage: 'type-coverage -p src --strict'
   },
   test: [
     'clean-release --config clean-run.config.ts',

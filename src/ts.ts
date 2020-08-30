@@ -68,7 +68,7 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
                         let text: string | undefined
                         try {
                           text = fs.readFileSync(path.resolve(path.dirname(file), url), { encoding: 'utf8' })
-                        } catch (error) {
+                        } catch {
                           // no action
                         }
                         collectCanOnlyBePublicErrors(node.members, referencedMembers, text, canOnlyBePublicErrors, file, sourceFile, node)

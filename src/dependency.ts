@@ -78,7 +78,7 @@ function getPackageJson(file: string, map: Map<string, { name: string, imported:
   let packageJson: { dependencies: unknown, peerDependencies: unknown } | undefined
   try {
     packageJson = JSON.parse(fs.readFileSync(packageJsonPath, { encoding: 'utf8' }))
-  } catch (error) {
+  } catch {
     // no action
   }
   if (packageJson) {
