@@ -1215,7 +1215,7 @@ postcss-less@3:
   dependencies:
     postcss "^7.0.14"
 
-postcss-scss@3:
+"postcss-scss@2 || 3":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/postcss-scss/-/postcss-scss-3.0.1.tgz#174745f0ca1fda2ddb7d2a5e5d60fa74db3cbd48"
   integrity sha512-gEri2aZT2Nwjbbqn0x9SoNHPL3QmswiTPEYS8Cc+kLivP3edPmNJgnENHRhUup8fF9xTpbqHRItBybGGpskj8w==
