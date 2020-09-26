@@ -1,5 +1,15 @@
 # Change Log
 
+## [1.13.0](https://github.com/plantain-00/no-unused-export/compare/v1.12.2...v1.13.0) (2020-09-26)
+  
+* fix: dependency version ([7904c49](https://github.com/plantain-00/no-unused-export/commit/7904c499d3c39118f1d1ca64d13c9bac33f4df3d))
+* chore: update dependencies ([47b87ec](https://github.com/plantain-00/no-unused-export/commit/47b87ec49eafa34ecfa80d6f35a00419648024e8)) ([4d6fe57](https://github.com/plantain-00/no-unused-export/commit/4d6fe57174b71e3ee370a1e6b4dc954951f5d54b)) ([2255671](https://github.com/plantain-00/no-unused-export/commit/22556712c1a431b7cebbc8dc74def171fc1e621e)) ([3fc0824](https://github.com/plantain-00/no-unused-export/commit/3fc0824474ffb79e3ec96df1fba81dca974df00c)) ([3a6bb95](https://github.com/plantain-00/no-unused-export/commit/3a6bb9505b76b7f75eb163f26f5508234bd709cb)) ([97f1b3a](https://github.com/plantain-00/no-unused-export/commit/97f1b3ab35ed07235dc69337b925245652247716)) ([6e5955b](https://github.com/plantain-00/no-unused-export/commit/6e5955bd9ffa71a16dcd72993ba42571949463bc)) ([f6a08ac](https://github.com/plantain-00/no-unused-export/commit/f6a08ac8153753c63e8921ed0c22d32dcd5bc38a)) ([1401ce2](https://github.com/plantain-00/no-unused-export/commit/1401ce25dc2a44b02fcf368b0209946c1aff7c60)) ([d7fd68c](https://github.com/plantain-00/no-unused-export/commit/d7fd68c134f8480e86797bcb2d53e1649883b672))
+* chore: remove unused error ([495de7c](https://github.com/plantain-00/no-unused-export/commit/495de7ca6a5b548cf8f102a2cc3d24b77f432288))
+* fix: add missing parserOptions ([f21612c](https://github.com/plantain-00/no-unused-export/commit/f21612c439cc248a8f610ca3cd6bd35b914b407f))
+* build: add missing publishConfig ([31c94ff](https://github.com/plantain-00/no-unused-export/commit/31c94ff465ee47e42d532eb964e9c5516d7efd0b))
+* build: improve release script ([c24adaf](https://github.com/plantain-00/no-unused-export/commit/c24adafc92e9450fa6d6bdc146533a22062d0d4b))
+* fix: ci failure ([4758583](https://github.com/plantain-00/no-unused-export/commit/47585833a194164098e1c1d1a4f570af18719116))
+
 ## [1.12.2](https://github.com/plantain-00/no-unused-export/compare/v1.12.1...v1.12.2) (2020-07-21)
   
 * chore: revert typescript dependency ([26516f6](https://github.com/plantain-00/no-unused-export/commit/26516f6c6ba75b5249c30d61d87021fb6378cffb))
@@ -64,22 +74,22 @@
   
 * refactor: improve performance for non-strict ([9f37dbe](https://github.com/plantain-00/no-unused-export/commit/9f37dbe2b01b86a53eee611196fd9edef024cd1a))
 
-## [1.8.0-alpha.3](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.2...v1.8.0-alpha.3) (2019-06-29)
+### [1.8.0-alpha.3](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.2...v1.8.0-alpha.3) (2019-06-29)
   
 * feat: support --ignore-module and --need-module ([0b2b102](https://github.com/plantain-00/no-unused-export/commit/0b2b1020e845f039c6896eca471db6d3d3bd4b0d))
 * chore: update dependencies ([28c524c](https://github.com/plantain-00/no-unused-export/commit/28c524cd44983bdedcadd2038b69f2996b9aeffd))
 * fix: scoped module name ([7c976f0](https://github.com/plantain-00/no-unused-export/commit/7c976f0446f9cb7abc2c23accc523ef395808aba))
 * fix: typo ([7dea801](https://github.com/plantain-00/no-unused-export/commit/7dea8010d357ddbc450b8e2d6591fc2f751e60d8))
 
-## [1.8.0-alpha.2](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.1...v1.8.0-alpha.2) (2019-06-28)
+### [1.8.0-alpha.2](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.1...v1.8.0-alpha.2) (2019-06-28)
   
 * fix: module name and fix ci on windows ([7d525c6](https://github.com/plantain-00/no-unused-export/commit/7d525c6013669c102f6c9aa7184ce67297e92310))
 
-## [1.8.0-alpha.1](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.0...v1.8.0-alpha.1) (2019-06-27)
+### [1.8.0-alpha.1](https://github.com/plantain-00/no-unused-export/compare/v1.8.0-alpha.0...v1.8.0-alpha.1) (2019-06-27)
   
 * fix: path format and inner module ([b4f1259](https://github.com/plantain-00/no-unused-export/commit/b4f1259ea3fd3865c39378d5198b9b6282f0cda4))
 
-## [1.8.0-alpha.0](https://github.com/plantain-00/no-unused-export/compare/v1.7.0...v1.8.0-alpha.0) (2019-06-27)
+### [1.8.0-alpha.0](https://github.com/plantain-00/no-unused-export/compare/v1.7.0...v1.8.0-alpha.0) (2019-06-27)
   
 * feat: support check imported module and modules in dependencies ([158bfdd](https://github.com/plantain-00/no-unused-export/commit/158bfdd4a4fa147e84f260c5fe7273ebb02e30a6))
 * chore: improve type coverage ([81b6ef0](https://github.com/plantain-00/no-unused-export/commit/81b6ef0aa737c4d5135f6ccab87517361cd67935))
