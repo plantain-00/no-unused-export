@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.14.0](https://github.com/plantain-00/no-unused-export/compare/v1.13.0...v1.14.0) (2020-10-22)
+  
+* feat: support postcss-less 4 ([7d63dbf](https://github.com/plantain-00/no-unused-export/commit/7d63dbf59b8725551e9a88f63393d7cfbe3548b3))
+* chore: update dependencies ([462c1a9](https://github.com/plantain-00/no-unused-export/commit/462c1a94d42910378d5d805e76aacb3c391bac83)) ([7327cb4](https://github.com/plantain-00/no-unused-export/commit/7327cb492efff635b2e3f32091e44067f307ba1c)) ([37b2412](https://github.com/plantain-00/no-unused-export/commit/37b241287ad2706d1d970af8e5625b9c8b328fe0))
+
 ## [1.13.0](https://github.com/plantain-00/no-unused-export/compare/v1.12.2...v1.13.0) (2020-09-26)
   
 * fix: dependency version ([7904c49](https://github.com/plantain-00/no-unused-export/commit/7904c499d3c39118f1d1ca64d13c9bac33f4df3d))
