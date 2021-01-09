@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.14.1](https://github.com/plantain-00/no-unused-export/compare/v1.14.0...v1.14.1) (2021-01-09)
+  
+* no message ([a82821e](https://github.com/plantain-00/no-unused-export/commit/a82821ee0aea2db21ff092abc6445fc6ce7b53f2))
+* chore: update dependencies ([9044f60](https://github.com/plantain-00/no-unused-export/commit/9044f60eea42d02a7733465b90e85d66d35d076e)) ([3916027](https://github.com/plantain-00/no-unused-export/commit/3916027ec77a8a4f4387b66a596b2e783b043568)) ([6844b8f](https://github.com/plantain-00/no-unused-export/commit/6844b8fb4946e1020b23fc742bb25ef3ae3d92db)) ([92276a3](https://github.com/plantain-00/no-unused-export/commit/92276a35df1c1bfe8922d0ad80120ab378419d4e)) ([c30fe10](https://github.com/plantain-00/no-unused-export/commit/c30fe10591848ebd0087a236d519cb6fd801ccc7)) ([f5be254](https://github.com/plantain-00/no-unused-export/commit/f5be254c655c69cd32505d455bbc0a2d04cf2e14)) ([fd2b4cb](https://github.com/plantain-00/no-unused-export/commit/fd2b4cb764fd9c6111a6d4fb690786e966d9d215)) ([6302700](https://github.com/plantain-00/no-unused-export/commit/6302700a047678bba92cc009bc6a7761adc52d80)) ([772dce1](https://github.com/plantain-00/no-unused-export/commit/772dce16a511a502ebf18af131cd7c9f712ba128)) ([f910161](https://github.com/plantain-00/no-unused-export/commit/f91016133aceb617a9295031ae4a8da2209d392d)) ([60afaf1](https://github.com/plantain-00/no-unused-export/commit/60afaf17b752ebc23d1518fcdcf66690a28aa5bd))
+
 ## [1.14.0](https://github.com/plantain-00/no-unused-export/compare/v1.13.0...v1.14.0) (2020-10-22)
   
 * feat: support postcss-less 4 ([7d63dbf](https://github.com/plantain-00/no-unused-export/commit/7d63dbf59b8725551e9a88f63393d7cfbe3548b3))
