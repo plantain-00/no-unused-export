@@ -3,7 +3,7 @@ import * as parse5 from 'parse5'
 
 export function collectCanOnlyBePublicErrors(members: ts.NodeArray<ts.ClassElement>, referencedMembers: Set<ts.ClassElement>, templateText: string | undefined, canOnlyBePublicErrors: CheckError[], file: string, sourceFile: ts.SourceFile, classDeclaration: ts.ClassDeclaration) {
   if (templateText && members.length > 0) {
-    const fragment = parse5.parseFragment(templateText) as parse5.DefaultTreeDocumentFragment
+    const fragment = parse5.parseFragment(templateText) as parse5.ChildNode
     for (const member of members) {
       const identifier = member.name as ts.Identifier
       if (identifier) {
@@ -25,17 +25,17 @@ export function collectCanOnlyBePublicErrors(members: ts.NodeArray<ts.ClassEleme
   }
 }
 
-function memberIsUsedInNode(memberName: string, node: parse5.DefaultTreeNode): boolean | TemplateType {
+function memberIsUsedInNode(memberName: string, node: parse5.ChildNode): boolean | TemplateType {
   if (node.nodeName.startsWith('#')) {
     if (node.nodeName === '#text') {
-      const textNode = node as parse5.DefaultTreeTextNode
+      const textNode = node as parse5.TextNode
       return !!textNode.value
         && textNode.value.includes(memberName)
         && !new RegExp(`{{.*'.*${memberName}.*'.*}}`).test(textNode.value)
         && !new RegExp(`{{.*".*${memberName}.*".*}}`).test(textNode.value)
     } else if (node.nodeName === '#document-fragment') {
-      for (const childNode of (node as parse5.DefaultTreeDocumentFragment).childNodes) {
-        const isUsed = memberIsUsedInNode(memberName, childNode as parse5.DefaultTreeElement)
+      for (const childNode of (node as parse5.Element).childNodes) {
+        const isUsed = memberIsUsedInNode(memberName, childNode)
         if (isUsed) {
           return isUsed
         }
@@ -43,7 +43,7 @@ function memberIsUsedInNode(memberName: string, node: parse5.DefaultTreeNode): b
       return false
     }
   } else {
-    const elementNode = node as parse5.DefaultTreeElement
+    const elementNode = node as parse5.Element
     if (elementNode.attrs) {
       for (const attr of elementNode.attrs) {
         let templateType: TemplateType | undefined
@@ -65,13 +65,13 @@ function memberIsUsedInNode(memberName: string, node: parse5.DefaultTreeNode): b
     }
     if (elementNode.childNodes) {
       for (const childNode of elementNode.childNodes) {
-        const isUsed = memberIsUsedInNode(memberName, childNode as parse5.DefaultTreeElement)
+        const isUsed = memberIsUsedInNode(memberName, childNode)
         if (isUsed) {
           return isUsed
         }
       }
     }
-    const content = (elementNode as unknown as { content?: parse5.DefaultTreeDocumentFragment }).content
+    const content = (elementNode as unknown as { content?: parse5.ChildNode }).content
     if (content) {
       return memberIsUsedInNode(memberName, content)
     }
