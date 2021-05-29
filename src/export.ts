@@ -56,7 +56,7 @@ function getJsDocs(node: ts.Node) {
         for (const tag of jsDoc.tags) {
           result.push({
             name: tag.tagName.text,
-            comment: tag.comment
+            comment: typeof tag.comment === 'string' ? tag.comment : undefined
           })
         }
       }
