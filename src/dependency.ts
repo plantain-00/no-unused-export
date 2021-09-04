@@ -49,9 +49,9 @@ function checkImport(
     return
   }
   const moduleNameParts = stringLiteral.text.split('/')
-  const moduleName = moduleNameParts[0].startsWith('@') && moduleNameParts.length > 1
+  const moduleName = moduleNameParts[0]!.startsWith('@') && moduleNameParts.length > 1
     ? moduleNameParts[0] + '/' + moduleNameParts[1]
-    : moduleNameParts[0]
+    : moduleNameParts[0]!
   if (module.Module.builtinModules.includes(moduleName)) {
     return
   }

@@ -81,7 +81,7 @@ async function executeCommandLine() {
     excludeFiles = excludeFiles.concat(exclude.split(','))
   }
 
-  const uniqFiles = await globAsync(inputFiles.length === 1 ? inputFiles[0] : `{${inputFiles.join(',')}}`, excludeFiles)
+  const uniqFiles = await globAsync(inputFiles.length === 1 ? inputFiles[0]! : `{${inputFiles.join(',')}}`, excludeFiles)
 
   let errorCount = 0
 

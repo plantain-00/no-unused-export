@@ -40,7 +40,7 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
               && ts.isIdentifier(decorator.expression.expression)
               && decorator.expression.expression.text === 'Component'
               && decorator.expression.arguments.length > 0) {
-              const argument = decorator.expression.arguments[0]
+              const argument = decorator.expression.arguments[0]!
               if (ts.isObjectLiteralExpression(argument)) {
                 for (const property of argument.properties) {
                   if (ts.isPropertyAssignment(property) && ts.isIdentifier(property.name)) {
@@ -134,7 +134,7 @@ function getText(program: ts.Program, languageService: ts.LanguageService, file:
   } else if (ts.isIdentifier(node)) {
     const definitions = languageService.getDefinitionAtPosition(file, node.end)
     if (definitions && definitions.length > 0) {
-      const definition = definitions[0]
+      const definition = definitions[0]!
       const child = findNodeAtDefinition(program, definition)
       if (child && ts.isVariableStatement(child)) {
         return getVariableValue(child, definition.name, program, languageService, file)
