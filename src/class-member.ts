@@ -35,8 +35,9 @@ export function collectReferencedMembers(
       const identifier = member.name
       if (hookNames.includes(identifier.text)) {
         referencedMembers.add(member)
-      } else if (member.decorators) {
-        for (const decorator of member.decorators) {
+      } else if (ts.canHaveDecorators(node)) {
+        const decorators = ts.getDecorators(node)
+        for (const decorator of (decorators || [])) {
           if (ts.isCallExpression(decorator.expression)) {
             const { expression } = decorator.expression
             if (ts.isIdentifier(expression)) {

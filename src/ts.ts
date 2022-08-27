@@ -32,7 +32,7 @@ export function check(uniqFiles: string[], ignoreModules: string[], needModules:
       if (ts.isClassDeclaration(node)) {
         const referencedMembers = collectReferencedMembers(node, languageService, file, node)
 
-        const decorators = node.decorators
+        const decorators = ts.canHaveDecorators(node) ? ts.getDecorators(node) : undefined
         if (decorators) {
           for (const decorator of decorators) {
             if (ts.isCallExpression(decorator.expression)

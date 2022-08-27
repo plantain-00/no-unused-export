@@ -8,6 +8,10 @@ demo/foo.ts:18:5 unreferenced class Dd member: d3
 demo/foo.ts:23:5 unreferenced class Dd member: d6
 demo/foo.ts:24:5 unreferenced class Dd member: d7
 demo/foo.ts:42:5 unreferenced class Df member: d1
+demo/foo.ts:45:5 unreferenced class Df member: d3
+demo/foo.ts:47:5 unreferenced class Df member: d4
+demo/foo.ts:50:9 unreferenced class Df member: d6
+demo/foo.ts:51:9 unreferenced class Df member: d6
 demo/foo.ts:59:5 unreferenced class Dg member: d1
 demo/foo.ts:92:5 unreferenced class Jj member: j1
 demo/foo.ts:106:5 unreferenced class Ll member: l1
